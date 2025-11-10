@@ -1,73 +1,123 @@
-# Welcome to your Lovable project
+## Architecture : Système de Pointage par Badge QR
+# UNE SEULE APPLICATION (Tablette/Mobile à l'entrée)
 
-## Project info
+Scanner de QR codes sur badges
+Mode Entrée / Sortie
+Affichage de confirmation (photo, nom, heure)
+Fonctionne hors-ligne avec synchronisation
+Interface simple et rapide
 
-**URL**: https://lovable.dev/projects/184a45f4-9bad-40fc-b08a-68a725cafadb
+# APPLICATION WEB (Admin unique)
 
-## How can I edit this code?
+Gestion complète par une seule personne
+Génération et impression des badges
+Tableau de bord multi-services
+Gestion des employés et stagiaires
+Rapports et exports
 
-There are several ways of editing your application.
+# Structure Organisationnelle
+Services de l'entreprise :
 
-**Use Lovable**
+Community Management
+Création Visuelle (Design)
+Informatique (IT)
+Gestion Relation Client (CRM/Support)
+Administration
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/184a45f4-9bad-40fc-b08a-68a725cafadb) and start prompting.
+Types de personnel :
 
-Changes made via Lovable will be committed automatically to this repo.
+Employés permanents (CDI)
+Stagiaires (durée limitée)
+Administrateur (gestionnaire unique)
 
-**Use your preferred IDE**
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Flux de Travail
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### **1. Création d'un nouveau membre (Admin)**
+1. Admin se connecte à l'app web
+2. Ajoute un employé/stagiaire :
+   - Informations personnelles
+   - Service d'affectation
+   - Type (employé/stagiaire)
+   - Photo
+   - Dates (début + fin si stagiaire)
+3. Système génère automatiquement :
+   - ID unique
+   - QR code personnalisé
+   - Badge PDF imprimable
+4. Admin imprime le badge
 
-Follow these steps:
+### **2. Pointage quotidien**
+1. Employé arrive avec son badge
+2. Scanne le QR code sur la tablette à l'entrée
+3. L'app affiche :
+   - Photo de l'employé
+   - Nom + Service
+   - Heure de pointage
+   - Message de confirmation
+4. Données enregistrées (même hors-ligne)
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### **3. Sortie**
+1. Même processus au départ
+2. Le système détecte automatiquement si c'est une entrée ou sortie
+3. Calcule la durée de travail
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+---
 
-# Step 3: Install the necessary dependencies.
-npm i
+## Fonctionnalités de l'Application Web (Admin)
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+### **1. Tableau de bord principal**
+- Vue d'ensemble en temps réel
+- Présents actuellement (par service)
+- Absents du jour
+- Retardataires
+- Stagiaires en cours
+- Graphiques de présence
 
-**Edit a file directly in GitHub**
+### **2. Gestion du personnel**
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+**a) Employés permanents**
+- Liste complète avec filtres (service, statut)
+- Ajout/Modification/Désactivation
+- Génération de badge
+- Historique de pointage individuel
+- Statistiques personnelles
 
-**Use GitHub Codespaces**
+**b) Stagiaires**
+- Liste des stagiaires actifs/terminés
+- Dates de début et fin de stage
+- Service d'affectation
+- Suivi de présence
+- Alertes de fin de stage
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### **3. Gestion des services**
+- Vue par service :
+  - Community Management
+  - Création Visuelle
+  - Informatique
+  - Gestion Relation Client
+  - Administration
+- Statistiques par service
+- Effectif par service
+- Taux de présence par service
 
-## What technologies are used for this project?
+### **4. Gestion des badges**
+- Génération de badges individuels
+- Génération en masse (import CSV)
+- Réimpression de badges
+- Révocation de badges (employé parti)
+- Templates de badges personnalisables
 
-This project is built with:
+### **5. Rapports et exports**
+- Rapport journalier (PDF/Excel)
+- Rapport mensuel par service
+- Rapport individuel
+- Heures travaillées
+- Statistiques de retards
+- Export pour paie
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/184a45f4-9bad-40fc-b08a-68a725cafadb) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+### **6. Configuration**
+- Horaires de travail (8h30 par défaut)
+- Paramètres des badges
+- Gestion des jours fériés
+- Paramètres de l'admin
