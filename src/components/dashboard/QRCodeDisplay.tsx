@@ -36,17 +36,17 @@ const QRCodeDisplay = () => {
     if (!qrCodeUrl) {
       generateNewQRCode();
     }
-  }, []); // Tableau de dépendances vide = exécution uniquement au montage
+  }, []); 
 
   return (
-    <Card>
+    <Card className="transition-all duration-300 ease-in-out hover:scale-105 hover:bg-card/90 hover:shadow-xl cursor-pointer">
       <CardHeader>
         <CardTitle>QR Code du Jour</CardTitle>
         <CardDescription>
           Les employés doivent scanner ce code pour pointer
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col items-center space-y-4">
+      <CardContent className="h-96 flex flex-col items-center space-y-4">
         {qrCodeUrl ? (
           <div className="p-4 bg-white rounded-lg">
             <img src={qrCodeUrl} alt="QR Code" className="w-64 h-64" />

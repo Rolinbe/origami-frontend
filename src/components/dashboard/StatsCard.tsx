@@ -18,7 +18,7 @@ const StatsCard = ({ title, value, icon: Icon, description, variant = "default" 
   };
 
   return (
-    <Card>
+    <Card className="transition-all duration-300 ease-in-out hover:scale-105 hover:bg-card/90 hover:shadow-xl cursor-pointer">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
         <Icon className={`h-4 w-4 ${variantStyles[variant]}`} />
