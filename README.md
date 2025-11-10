@@ -117,7 +117,7 @@ Administrateur (gestionnaire unique)
 - Export pour paie
 
 ### **6. Configuration**
-- Horaires de travail (8h30 par défaut)
+- Horaires de travail (8h00 par défaut)
 - Paramètres des badges
 - Gestion des jours fériés
 - Paramètres de l'admin
