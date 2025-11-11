@@ -1,5 +1,4 @@
-import { Users, UserCheck, UserX, Clock, LogOut, LayoutDashboard, Settings } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Users, UserCheck, UserX, Clock } from "lucide-react";
 import StatsCard from "@/components/dashboard/StatsCard";
 import QRCodeDisplay from "@/components/dashboard/QRCodeDisplay";
 import AttendanceList from "@/components/dashboard/AttendanceList";
@@ -8,7 +7,8 @@ import AbsentList from "@/components/dashboard/AbsentList";
 import LateEmployees from "@/components/dashboard/LateEmployees";
 import InternsList from "@/components/dashboard/InternsList";
 import AttendanceCharts from "@/components/dashboard/AttendanceCharts";
-import { NavLink } from "@/components/NavLink";
+// import { NavLink } from "@/components/NavLink";
+import { Sidebar } from "@/components/sidebar/Sidebar";
 
 const Dashboard = () => {
   const stats = {
@@ -20,39 +20,8 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background flex">
-      {/* Sidebar (inchangé) */}
-      <aside className="w-64 bg-card border-r min-h-screen p-4">
-        <div className="flex flex-col h-full">
-          <div className="mb-8">
-            <h1 className="text-xl font-bold text-foreground">Système de Pointage</h1>
-          </div>
-
-          <nav className="space-y-2 flex-1">
-            <NavLink
-              to="/dashboard"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
-              activeClassName="bg-accent text-accent-foreground"
-            >
-              <LayoutDashboard size={20} />
-              <span>Tableau de bord</span>
-            </NavLink>
-            
-            <NavLink
-              to="/settings"
-              className="flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-accent hover:text-accent-foreground transition-colors"
-              activeClassName="bg-accent text-accent-foreground"
-            >
-              <Settings size={20} />
-              <span>Paramètres</span>
-            </NavLink>
-          </nav>
-
-          <Button variant="outline" className="w-full" size="sm">
-            <LogOut className="mr-2 h-4 w-4" />
-            Déconnexion
-          </Button>
-        </div>
-      </aside>
+      {/* Sidebar */}
+      <Sidebar />
 
       {/* Main Content réorganisé */}
       <div className="flex-1 overflow-auto">

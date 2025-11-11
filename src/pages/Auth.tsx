@@ -97,7 +97,7 @@ const Auth = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="votre.email@entreprise.com"
+                  placeholder="email@origami.mg"
                   className="h-11 border-gray-300 focus:border-gray-900 focus:ring-gray-900"
                 />
               </div>
@@ -110,7 +110,6 @@ const Auth = () => {
                     type="button"
                     className="text-xs text-gray-600 hover:text-gray-900 font-medium"
                   >
-                    Mot de passe oublié ?
                   </button>
                 </div>
                 <Input
@@ -127,9 +126,6 @@ const Auth = () => {
               > 
                 Se connecter
               </Button>
-              <p className="text-xs text-center text-gray-500">
-                En vous connectant, vous acceptez nos conditions d'utilisation
-              </p>
             </CardFooter>
           </Card>
         </div>
