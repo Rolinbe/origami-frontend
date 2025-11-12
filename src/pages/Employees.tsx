@@ -139,7 +139,7 @@ const Employees: React.FC = () => {
             </div>
 
             {/* En attente + Filtres */}
-            <div className="grid gap-6 lg:grid-cols-3">
+            <div className="grid gap-6 lg:grid-cols-2">
               <div className="lg:col-span-2">
                 <EmployeeFiltersComponent 
                   filters={filters} 
@@ -147,12 +147,12 @@ const Employees: React.FC = () => {
                   services={mockServices}
                 />
               </div>
-              <div>
+              {/* <div>
                 <PendingEmployeesCard 
                   employees={pendingEmployees} 
                   onValidate={handleValidate}
                 />
-              </div>
+              </div> */}
             </div>
 
             {/* Table */}

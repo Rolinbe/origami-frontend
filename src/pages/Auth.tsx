@@ -3,9 +3,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState, useEffect } from "react";
+import { Eye, EyeOff } from "lucide-react";
 
 const Auth = () => {
   const [currentImage, setCurrentImage] = useState(0);
+  const [showPassword, setShowPassword] = useState(false);
   
   // Images de démonstration - remplacez par vos vraies images
   const images = [
@@ -20,7 +22,7 @@ const Auth = () => {
       setCurrentImage((prev) => (prev + 1) % images.length);
     }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [images.length]);
 
   return (
     <div className="min-h-screen flex">
@@ -71,10 +73,10 @@ const Auth = () => {
         <div className="w-full max-w-md space-y-8">
           {/* Logo et titre */}
           <div className="flex flex-col items-center text-center">
-            <div className="w-64 h-40 flex items-center justify-center">
+            <div className="w-64 h-32 flex items-center justify-center">
               <img 
                 src="./src/assets/icons/logo.png" 
-                className="w-full h-full object-contain" 
+                className="w-full h-24 object-contain" 
                 alt="Logo Origami Tech"
               />
             </div>
@@ -83,12 +85,12 @@ const Auth = () => {
 
           {/* Formulaire */}
           <Card className="border-0 shadow-none">
-            <CardHeader className="px-0 pt-0">
+            {/* <CardHeader className="px-0 pt-0">
               <CardTitle className="text-2xl font-semibold">Connexion</CardTitle>
               <CardDescription>
                 Connectez-vous pour accéder à votre espace
               </CardDescription>
-            </CardHeader>
+            </CardHeader> */}
             <CardContent className="space-y-4 px-0">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-sm font-medium text-gray-700">
@@ -97,7 +99,7 @@ const Auth = () => {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="email@origami.mg"
+                  placeholder="origami@tech.com"
                   className="h-11 border-gray-300 focus:border-gray-900 focus:ring-gray-900"
                 />
               </div>
@@ -110,13 +112,24 @@ const Auth = () => {
                     type="button"
                     className="text-xs text-gray-600 hover:text-gray-900 font-medium"
                   >
+                    Mot de passe oublié ?
                   </button>
                 </div>
-                <Input
-                  id="password"
-                  type="password"
-                  className="h-11 border-gray-300 focus:border-gray-900 focus:ring-gray-900"
-                />
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? "text" : "password"}
+                    className="h-11 border-gray-300 focus:border-gray-900 focus:ring-gray-900 pr-11"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-900"
+                    aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                  >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
               </div>
             </CardContent>
             <CardFooter className="px-0 pt-2 flex-col gap-4">
@@ -126,6 +139,9 @@ const Auth = () => {
               > 
                 Se connecter
               </Button>
+              <p className="text-xs text-center text-gray-500">
+                En vous connectant, vous acceptez nos conditions d'utilisation
+              </p>
             </CardFooter>
           </Card>
         </div>
