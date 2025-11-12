@@ -7,6 +7,8 @@ import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Services from "./pages/Services";
+import Employees from "./pages/Employees";
+import BadgeManagement from "./pages/BadgeManagement";
 
 const queryClient = new QueryClient();
 
@@ -20,6 +22,8 @@ const App = () => (
           <Route path="/" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/services" element={<Services />} />
+          <Route path="/employees" element={<Employees />} />
+          <Route path="/badges" element={<BadgeManagement />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

@@ -1,7 +1,6 @@
 import { 
   Users, LayoutDashboard, 
   Building, UserCog, Badge,
-  Book,
   BookMarked
 } from "lucide-react";
 import { NavItem } from "./types";

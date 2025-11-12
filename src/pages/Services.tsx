@@ -103,7 +103,8 @@ const Services = () => {
     <div className="min-h-screen bg-background flex">
       <Sidebar />
       
-      <div className="flex-1">
+      {/* Ajout de ml-64 et h-screen overflow-auto */}
+      <div className="flex-1 ml-64 overflow-auto h-screen">
         <main className="container mx-auto px-4 py-8">
           <div className="space-y-6">
             {/* Header */}
