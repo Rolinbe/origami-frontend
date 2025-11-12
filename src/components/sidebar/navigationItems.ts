@@ -1,7 +1,11 @@
-import { 
-  Users, LayoutDashboard, 
-  Building, UserCog, Badge,
-  BookMarked
+import {
+  Users,
+  LayoutDashboard,
+  Building,
+  UserCog,
+  Badge,
+  BookMarked,
+  Settings,
 } from "lucide-react";
 import { NavItem } from "./types";
 
@@ -28,5 +32,10 @@ export const navigationItems: NavItem[] = [
     title: "Rapports",
     icon: BookMarked,
     path: "/reports"
+  },
+  {
+    title: "Paramètres",
+    icon: Settings,
+    path: "/settings"
   }
 ];

@@ -26,7 +26,7 @@ const Dashboard = () => {
       <div className="flex-1 ml-64 overflow-auto h-screen">
         <main className="container mx-auto px-4 py-8">
           {/* En-tête */}
-          <div className="mb-8">
+          <div className="mb-4">
             <h1 className="text-3xl font-bold text-foreground mb-2">Tableau de bord principal</h1>
             <p className="text-muted-foreground">Vue d'ensemble en temps réel de la présence</p>
           </div>
@@ -64,38 +64,33 @@ const Dashboard = () => {
             </div>
 
             {/* Première ligne : Vue d'ensemble */}
-            <div className="grid gap-6 lg:grid-cols-2">
-              <ServicePresence />
-              {/* <QRCodeDisplay /> */}
-              <div className="space-y-6">
-                <LateEmployees /> 
-              </div>
-            </div>
 
-            {/* Deuxième ligne : Graphiques + Stagiaires */}
             <div className="grid gap-6 lg:grid-cols-3">
-              
               <div className="lg:col-span-2">
-                <AttendanceCharts />
+                <AttendanceList />
               </div>
-              
+
               {/* Stagiaires */}
+
               <div className="lg:col-span-1">
                 <InternsList />
               </div>
             </div>
 
-            {/* Troisième ligne : Pointages */}
-           <div className="grid gap-6 lg:grid-cols-3">
+            {/* Deuxième ligne : Graphiques + Absents du jour  */}
+            <div className="grid gap-6 lg:grid-cols-3">
+
               <div className="lg:col-span-2">
-                <AttendanceList />
+                <AttendanceCharts />
               </div>
-              
+
               {/* Absents du jour */}
               <div className="lg:col-span-1">
                 <AbsentList />
               </div>
             </div>
+
+           
           </div>
         </main>
       </div>
