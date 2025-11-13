@@ -1,198 +1,191 @@
-import React, { useState } from 'react';
-import { Plus } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
-import { Sidebar } from '@/components/sidebar/Sidebar';
-import { BadgeStats } from '@/components/badges/BadgeStats';
-import { BadgeFilters } from '@/components/badges/BadgeFilters';
-import { BadgeCard } from '@/components/badges/BadgeCard';
-import { BadgeDetailModal } from '@/components/badges/BadgeDetailModal';
-import { CreateBadgeModal } from '@/components/badges/CreateBadgeModal';
-import { Badge, BadgeFilters as BadgeFiltersType } from '@/components/badges/types';
+import React, { useState, useEffect } from "react";
+import { Plus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Sidebar } from "@/components/sidebar/Sidebar";
+import { toast } from "sonner";
+import { BadgeStats } from "@/components/badges/BadgeStats";
+import { BadgeFilters } from "@/components/badges/BadgeFilters";
+import { BadgeCard } from "@/components/badges/BadgeCard";
+import { BadgeDetailModal } from "@/components/badges/BadgeDetailModal";
+import { CreateBadgeModal } from "@/components/badges/CreateBadgeModal";
+import {
+  Badge,
+  BadgeFilters as BadgeFiltersType,
+  BadgeStats as BadgeStatsType,
+} from "@/types/badge.types";
+import badgeService from "@/services/badge.service";
+import serviceService from "@/services/service.service";
+import { Service } from "@/types/service.types";
 
 const BadgeManagement: React.FC = () => {
-  // Données de démonstration
-  const [badges, setBadges] = useState<Badge[]>([
-    {
-      id: '1',
-      badgeId: 'EMP-IT-2025-A1B2C3',
-      userId: '1',
-      qrCodeData: '{"badgeId":"EMP-IT-2025-A1B2C3"}',
-      isActive: true,
-      issuedAt: '2025-01-15T10:00:00',
-      qrCodeImage: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-      user: {
-        id: '1',
-        firstName: 'Jean',
-        lastName: 'Dupont',
-        email: 'jean.dupont@origami.mg',
-        phone: '+261 34 12 345 67',
-        position: 'Développeur Full Stack',
-        employeeType: 'permanent',
-        contractStartDate: '2024-01-01',
-        service: {
-          id: '1',
-          name: 'Informatique',
-          code: 'IT',
-          color: '#3B82F6'
-        }
-      }
-    },
-    {
-      id: '2',
-      badgeId: 'STG-CM-2025-D4E5F6',
-      userId: '2',
-      qrCodeData: '{"badgeId":"STG-CM-2025-D4E5F6"}',
-      isActive: true,
-      issuedAt: '2025-02-01T09:00:00',
-      qrCodeImage: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-      user: {
-        id: '2',
-        firstName: 'Marie',
-        lastName: 'Martin',
-        email: 'marie.martin@origami.mg',
-        phone: '+261 34 23 456 78',
-        position: 'Community Manager',
-        employeeType: 'intern',
-        contractStartDate: '2025-02-01',
-        contractEndDate: '2025-07-31',
-        service: {
-          id: '2',
-          name: 'Community Management',
-          code: 'CM',
-          color: '#10B981'
-        }
-      }
-    },
-    {
-      id: '3',
-      badgeId: 'EMP-CV-2024-G7H8I9',
-      userId: '3',
-      qrCodeData: '{"badgeId":"EMP-CV-2024-G7H8I9"}',
-      isActive: false,
-      issuedAt: '2024-06-10T11:00:00',
-      revokedAt: '2025-01-20T14:30:00',
-      revokedReason: 'Fin de contrat',
-      qrCodeImage: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
-      user: {
-        id: '3',
-        firstName: 'Pierre',
-        lastName: 'Durand',
-        email: 'pierre.durand@origami.mg',
-        position: 'Designer Graphique',
-        employeeType: 'permanent',
-        service: {
-          id: '3',
-          name: 'Création Visuelle',
-          code: 'CV',
-          color: '#F59E0B'
-        }
-      }
-    }
-  ]);
-
+  const [badges, setBadges] = useState<Badge[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
   const [filters, setFilters] = useState<BadgeFiltersType>({
-    search: '',
-    status: 'all',
-    employeeType: 'all',
-    service: 'all'
+    search: "",
+    status: "all",
+    employeeType: "all",
+    service: "all",
   });
-
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [showDetailModal, setShowDetailModal] = useState(false);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Charger les services au montage du composant
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const servicesData = await serviceService.getAllServices();
+        setServices(servicesData);
+      } catch (error) {
+        console.error("Erreur lors du chargement des services:", error);
+        toast.error("Impossible de charger les services");
+      }
+    };
+
+    fetchServices();
+  }, []);
+
+  // Charger les badges avec les filtres actuels
+  useEffect(() => {
+    const fetchBadges = async () => {
+      try {
+        setIsLoading(true);
+        const badgesData = await badgeService.getAllBadges(filters);
+        setBadges(badgesData);
+      } catch (error) {
+        console.error("Erreur lors du chargement des badges:", error);
+        toast.error("Impossible de charger les badges");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBadges();
+  }, [filters]);
 
   // Calculer les statistiques
-  const stats = {
+  const stats: BadgeStatsType = {
     total: badges.length,
-    active: badges.filter(b => b.isActive).length,
-    revoked: badges.filter(b => !b.isActive).length,
-    interns: badges.filter(b => b.user.employeeType === 'intern' && b.isActive).length
+    active: badges.filter((b) => b.isActive).length,
+    revoked: badges.filter((b) => !b.isActive).length,
+    interns: badges.filter(
+      (b) => b.user?.employeeType === "intern" && b.isActive
+    ).length,
   };
 
-  // Filtrer les badges
-  const filteredBadges = badges.filter(badge => {
-    const matchSearch = filters.search === '' || 
-      badge.user.firstName.toLowerCase().includes(filters.search.toLowerCase()) ||
-      badge.user.lastName.toLowerCase().includes(filters.search.toLowerCase()) ||
-      badge.user.email.toLowerCase().includes(filters.search.toLowerCase()) ||
+  // Filtrer les badges (côté client pour une meilleure expérience utilisateur)
+  const filteredBadges = badges.filter((badge) => {
+    const matchSearch =
+      filters.search === "" ||
+      badge.user?.firstName
+        ?.toLowerCase()
+        .includes(filters.search.toLowerCase()) ||
+      badge.user?.lastName
+        ?.toLowerCase()
+        .includes(filters.search.toLowerCase()) ||
+      badge.user?.email?.toLowerCase().includes(filters.search.toLowerCase()) ||
       badge.badgeId.toLowerCase().includes(filters.search.toLowerCase());
-    
-    const matchStatus = filters.status === 'all' ||
-      (filters.status === 'active' && badge.isActive) ||
-      (filters.status === 'inactive' && !badge.isActive);
-    
-    const matchType = filters.employeeType === 'all' ||
-      badge.user.employeeType === filters.employeeType;
-    
-    const matchService = filters.service === 'all' ||
-      badge.user.service?.code === filters.service;
-    
+
+    const matchStatus =
+      filters.status === "all" ||
+      (filters.status === "active" && badge.isActive) ||
+      (filters.status === "inactive" && !badge.isActive);
+
+    const matchType =
+      filters.employeeType === "all" ||
+      badge.user?.employeeType === filters.employeeType;
+
+    const matchService =
+      filters.service === "all" ||
+      badge.user?.service?.code === filters.service;
+
     return matchSearch && matchStatus && matchType && matchService;
   });
 
   const handleFilterChange = (key: keyof BadgeFiltersType, value: string) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    setFilters((prev) => ({ ...prev, [key]: value }));
   };
 
   const handleSearch = (value: string) => {
-    setFilters(prev => ({ ...prev, search: value }));
+    setFilters((prev) => ({ ...prev, search: value }));
   };
 
-  const handleViewBadge = (badge: Badge) => {
-    setSelectedBadge(badge);
-    setShowDetailModal(true);
-  };
-
-  const handleRevokeBadge = (badge: Badge) => {
-    const reason = prompt('Raison de la révocation:');
-    if (reason) {
-      setBadges(prev => prev.map(b => 
-        b.id === badge.id 
-          ? { ...b, isActive: false, revokedAt: new Date().toISOString(), revokedReason: reason }
-          : b
-      ));
-    }
-  };
-
-  const handleReactivateBadge = (badge: Badge) => {
-    if (confirm('Voulez-vous réactiver ce badge ?')) {
-      setBadges(prev => prev.map(b => 
-        b.id === badge.id 
-          ? { ...b, isActive: true, revokedAt: undefined, revokedReason: undefined }
-          : b
-      ));
-    }
-  };
-
-  const handleRegenerateBadge = (badge) => {
-    if (confirm('Voulez-vous régénérer ce badge ? L\'ancien badge sera révoqué.')) {
-      // Révoquer l'ancien
-      const updatedBadges = badges.map(b => 
-        b.id === badge.id 
-          ? { ...b, isActive: false, revokedAt: new Date().toISOString(), revokedReason: 'Régénération du badge' }
-          : b
+  const handleViewBadge = async (badge: Badge) => {
+    try {
+      // Récupérer les détails complets du badge
+      const badgeDetails = await badgeService.getBadgeById(badge.badgeId);
+      setSelectedBadge(badgeDetails);
+      setShowDetailModal(true);
+    } catch (error) {
+      console.error(
+        "Erreur lors de la récupération des détails du badge:",
+        error
       );
-      
-      // Créer un nouveau
-      const newBadge = {
-        ...badge,
-        id: Date.now().toString(),
-        badgeId: `${badge.user.employeeType === 'intern' ? 'STG' : 'EMP'}-${badge.user.service?.code || 'GEN'}-2025-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
-        isActive: true,
-        issuedAt: new Date().toISOString(),
-        revokedAt: null,
-        revokedReason: null
-      };
-      
-      setBadges([...updatedBadges, newBadge]);
+      toast.error("Impossible de récupérer les détails du badge");
     }
   };
 
-  const handleCreateBadge = (userId) => {
-    // Simuler la création d'un badge
-    console.log('Créer un badge pour l\'utilisateur:', userId);
-    setShowCreateModal(false);
+  const handleRevokeBadge = async (badge: Badge) => {
+    const reason = prompt("Veuillez indiquer la raison de la révocation:");
+    if (!reason) return;
+
+    try {
+      setIsSubmitting(true);
+      const updatedBadge = await badgeService.revokeBadge(
+        badge.badgeId,
+        reason
+      );
+
+      // Mettre à jour le badge dans la liste
+      setBadges(badges.map((b) => (b.id === badge.id ? updatedBadge : b)));
+
+      toast.success("Badge révoqué avec succès");
+    } catch (error) {
+      console.error("Erreur lors de la révocation du badge:", error);
+      toast.error("Impossible de révoquer ce badge");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleReactivateBadge = async (badge: Badge) => {
+    if (!confirm("Voulez-vous réactiver ce badge ?")) return;
+
+    try {
+      setIsSubmitting(true);
+      const updatedBadge = await badgeService.reactivateBadge(badge.badgeId);
+
+      // Mettre à jour le badge dans la liste
+      setBadges(badges.map((b) => (b.id === badge.id ? updatedBadge : b)));
+
+      toast.success("Badge réactivé avec succès");
+    } catch (error) {
+      console.error("Erreur lors de la réactivation du badge:", error);
+      toast.error("Impossible de réactiver ce badge");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCreateBadge = async (userId: string) => {
+    try {
+      setIsSubmitting(true);
+      const newBadge = await badgeService.createBadge(userId);
+
+      // Ajouter le nouveau badge à la liste
+      setBadges([newBadge, ...badges]);
+
+      setShowCreateModal(false);
+      toast.success("Badge créé avec succès");
+    } catch (error) {
+      console.error("Erreur lors de la création du badge:", error);
+      toast.error("Impossible de créer ce badge");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -203,12 +196,14 @@ const BadgeManagement: React.FC = () => {
           {/* Header */}
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Gestion des Badges</h1>
+              <h1 className="text-3xl font-bold text-foreground">
+                Gestion des Badges
+              </h1>
               <p className="text-muted-foreground mt-1">
                 Gérez les badges d'identification des employés
               </p>
             </div>
-            <Button 
+            <Button
               onClick={() => setShowCreateModal(true)}
               className="bg-[rgb(101,193,255)] hover:bg-[rgb(81,173,235)] text-white"
             >
@@ -221,37 +216,61 @@ const BadgeManagement: React.FC = () => {
           <BadgeStats stats={stats} />
 
           {/* Filters */}
-          <BadgeFilters 
+          <BadgeFilters
             filters={filters}
             onFilterChange={handleFilterChange}
             onSearch={handleSearch}
+            services={services}
           />
 
           {/* Badge List */}
           <div>
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">
-                {filteredBadges.length} badge{filteredBadges.length > 1 ? 's' : ''} trouvé{filteredBadges.length > 1 ? 's' : ''}
+                {filteredBadges.length} badge
+                {filteredBadges.length > 1 ? "s" : ""} trouvé
+                {filteredBadges.length > 1 ? "s" : ""}
               </h2>
             </div>
-            
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {filteredBadges.map(badge => (
-                <BadgeCard
-                  key={badge.id}
-                  badge={badge}
-                  onView={handleViewBadge}
-                  onRevoke={handleRevokeBadge}
-                  onReactivate={handleReactivateBadge}
-                  onRegenerate={handleRegenerateBadge}
-                />
-              ))}
-            </div>
 
-            {filteredBadges.length === 0 && (
+            {isLoading ? (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {[...Array(6)].map((_, i) => (
+                  <Card key={i} className="animate-pulse">
+                    <CardContent className="pt-6">
+                      <div className="flex items-start gap-4">
+                        <div className="w-16 h-16 rounded-full bg-gray-200"></div>
+                        <div className="flex-1 space-y-2">
+                          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                          <div className="h-4 bg-gray-200 rounded w-5/6"></div>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {filteredBadges.map((badge) => (
+                  <BadgeCard
+                    key={badge.id}
+                    badge={badge}
+                    onView={handleViewBadge}
+                    onRevoke={handleRevokeBadge}
+                    onReactivate={handleReactivateBadge}
+                    isSubmitting={isSubmitting}
+                  />
+                ))}
+              </div>
+            )}
+
+            {!isLoading && filteredBadges.length === 0 && (
               <Card>
                 <CardContent className="py-12 text-center">
-                  <p className="text-muted-foreground">Aucun badge trouvé avec ces critères</p>
+                  <p className="text-muted-foreground">
+                    Aucun badge trouvé avec ces critères
+                  </p>
                 </CardContent>
               </Card>
             )}
@@ -271,6 +290,7 @@ const BadgeManagement: React.FC = () => {
         <CreateBadgeModal
           onClose={() => setShowCreateModal(false)}
           onSubmit={handleCreateBadge}
+          isSubmitting={isSubmitting}
         />
       )}
     </div>

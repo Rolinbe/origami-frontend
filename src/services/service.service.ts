@@ -65,11 +65,32 @@ class ServiceService {
   async deactivateService(id: string): Promise<Service> {
     try {
       const response = await apiService.delete<{ service: Service }>(
-        `${this.endpoint}/${id}`
+        `${this.endpoint}/${id}/deactivate`
       );
       return response.data.service;
     } catch (error) {
       console.error(`Erreur lors de la désactivation du service ${id}:`, error);
+      throw error;
+    }
+  }
+
+  async activateService(id: string): Promise<Service> {
+    try {
+      const response = await apiService.put<{ service: Service }>(
+        `${this.endpoint}/${id}/activate`
+      );
+      return response.data.service;
+    } catch (error) {
+      console.error(`Erreur lors de l'activation du service ${id}:`, error);
+      throw error;
+    }
+  }
+
+  async deleteService(id: string): Promise<void> {
+    try {
+      await apiService.delete(`${this.endpoint}/${id}`);
+    } catch (error) {
+      console.error(`Erreur lors de la suppression du service ${id}:`, error);
       throw error;
     }
   }

@@ -48,7 +48,7 @@ const Services = () => {
   const handleDelete = async (serviceId: string) => {
     if (confirm("Êtes-vous sûr de vouloir désactiver ce département ?")) {
       try {
-        await serviceService.deactivateService(serviceId);
+        await serviceService.deleteService(serviceId);
         setServices(
           services.map((s) =>
             s.id === serviceId ? { ...s, isActive: false } : s
@@ -56,8 +56,8 @@ const Services = () => {
         );
         toast.success("Département désactivé avec succès");
       } catch (error) {
-        console.error("Erreur lors de la désactivation du service:", error);
-        toast.error("Impossible de désactiver le département");
+        console.error("Erreur lors de la supprimer du service:", error);
+        toast.error("Impossible de supprimer le département");
       }
     }
   };
@@ -78,7 +78,7 @@ const Services = () => {
         toast.success("Département désactivé avec succès");
       } else {
         // Si le service est inactif, on le réactive
-        await serviceService.updateService(serviceId, { isActive: true });
+        await serviceService.activateService(serviceId);
         setServices(
           services.map((s) =>
             s.id === serviceId ? { ...s, isActive: true } : s
