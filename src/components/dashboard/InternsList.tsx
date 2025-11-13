@@ -152,34 +152,33 @@ const InternsList = () => {
                     {intern.service ?? "Service non défini"}
                   </p>
                 </div>
-                {intern.present ? (
-                  <div className="text-right">
+                <div className="text-right space-y-1">
+                  {intern.present ? (
                     <Badge
-                      className={intern.isLate ? "bg-red-500 text-white" : "bg-green-500 text-white"}
+                      className={
+                        intern.isLate ? "bg-red-500 text-white" : "bg-green-500 text-white"
+                      }
                     >
                       {intern.isLate ? "En retard" : "Présent"}
                     </Badge>
-                    {intern.checkIn && (
-                      <p className="text-xs text-muted-foreground mt-1">
-                        Depuis {intern.checkIn}
-                      </p>
-                    )}
-                    {intern.isLate && (
-                      <p className="text-xs text-destructive mt-1">+{intern.lateMinutes} min</p>
-                    )}
-                  </div>
-                ) : intern.checkOut ? (
-                  <div className="text-right">
+                  ) : intern.checkOut ? (
                     <Badge variant="outline" className="border-blue-500 text-blue-500">
                       Sorti
                     </Badge>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      À {intern.checkOut}
-                    </p>
-                  </div>
-                ) : (
-                  <Badge variant="outline">En attente</Badge>
-                )}
+                  ) : (
+                    <Badge variant="outline">En attente</Badge>
+                  )}
+
+                  {intern.checkIn && (
+                    <p className="text-xs text-muted-foreground">Entrée&nbsp;{intern.checkIn}</p>
+                  )}
+                  {intern.checkOut && (
+                    <p className="text-xs text-muted-foreground">Sortie&nbsp;{intern.checkOut}</p>
+                  )}
+                  {intern.isLate && (
+                    <p className="text-xs text-destructive">Retard&nbsp;+{intern.lateMinutes} min</p>
+                  )}
+                </div>
               </div>
             ))
           )}
