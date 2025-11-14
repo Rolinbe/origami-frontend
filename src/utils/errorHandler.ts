@@ -6,7 +6,10 @@ export const handleApiError = (error: any) => {
 
   if (error.response?.status === 401) {
     toast.error("Session expirée. Veuillez vous reconnecter.");
-    window.location.href = "/login";
+    // Supprimer le token invalide
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/";
   } else if (error.response?.status === 403) {
     toast.error("Vous n'avez pas les permissions pour effectuer cette action.");
   } else if (error.response?.status === 404) {

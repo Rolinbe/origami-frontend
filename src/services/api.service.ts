@@ -6,7 +6,7 @@ class ApiService {
 
   constructor() {
     this.api = axios.create({
-      baseURL: "http://localhost:5000/api",
+      baseURL: "https://api.origami.mg/api",
       headers: {
         "Content-Type": "application/json",
       },
@@ -29,19 +29,19 @@ class ApiService {
   }
 
   // Méthodes génériques pour les requêtes HTTP
-  public get<T = any>(url: string): Promise<AxiosResponse<T>> {
+  public get<T = unknown>(url: string): Promise<AxiosResponse<T>> {
     return this.api.get<T>(url);
   }
 
-  public post<T = any>(url: string, data?: any): Promise<AxiosResponse<T>> {
+  public post<T = unknown>(url: string, data?: unknown): Promise<AxiosResponse<T>> {
     return this.api.post<T>(url, data);
   }
 
-  public put<T = any>(url: string, data?: any): Promise<AxiosResponse<T>> {
+  public put<T = unknown>(url: string, data?: unknown): Promise<AxiosResponse<T>> {
     return this.api.put<T>(url, data);
   }
 
-  public delete<T = any>(url: string): Promise<AxiosResponse<T>> {
+  public delete<T = unknown>(url: string): Promise<AxiosResponse<T>> {
     return this.api.delete<T>(url);
   }
 }

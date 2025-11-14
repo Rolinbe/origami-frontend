@@ -3,11 +3,26 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState, useEffect } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 
 const Auth = () => {
   const [currentImage, setCurrentImage] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { signIn, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+
+  // Rediriger si déjà connecté
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard");
+    }
+  }, [isAuthenticated, navigate]);
   
   // Images de démonstration - remplacez par vos vraies images
   const images = [
@@ -23,6 +38,30 @@ const Auth = () => {
     }, 4000);
     return () => clearInterval(interval);
   }, [images.length]);
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      toast.error("Veuillez remplir tous les champs");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await signIn(email, password);
+      if (error) {
+        toast.error(error.message || "Erreur lors de la connexion");
+      } else {
+        toast.success("Connexion réussie");
+        // La navigation se fait automatiquement dans le hook useAuth
+      }
+    } catch (error) {
+      const errorMessage =
+        (error as { message?: string }).message || "Erreur lors de la connexion";
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="min-h-screen flex">
@@ -100,7 +139,15 @@ const Auth = () => {
                   id="email"
                   type="email"
                   placeholder="origami@tech.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  disabled={loading}
                   className="h-11 border-gray-300 focus:border-gray-900 focus:ring-gray-900"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !loading) {
+                      handleLogin();
+                    }
+                  }}
                 />
               </div>
               <div className="space-y-2">
@@ -119,11 +166,20 @@ const Auth = () => {
                   <Input
                     id="password"
                     type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    disabled={loading}
                     className="h-11 border-gray-300 focus:border-gray-900 focus:ring-gray-900 pr-11"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !loading) {
+                        handleLogin();
+                      }
+                    }}
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword((prev) => !prev)}
+                    disabled={loading}
                     className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-900"
                     aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
                   >
@@ -134,10 +190,18 @@ const Auth = () => {
             </CardContent>
             <CardFooter className="px-0 pt-2 flex-col gap-4">
               <Button 
-                onClick={(e) => e.preventDefault()}
-                className="w-full h-11 bg-gray-900 hover:bg-gray-800 text-white font-medium"
+                onClick={handleLogin}
+                disabled={loading || !email || !password}
+                className="w-full h-11 bg-gray-900 hover:bg-gray-800 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed" 
               > 
-                Se connecter
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Connexion...
+                  </>
+                ) : (
+                  "Se connecter"
+                )}
               </Button>
               <p className="text-xs text-center text-gray-500">
                 En vous connectant, vous acceptez nos conditions d'utilisation
