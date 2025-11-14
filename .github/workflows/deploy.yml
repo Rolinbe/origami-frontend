@@ -3,7 +3,7 @@ name: Deploy admin.origami.mg to VPS
 on:
   push:
     branches:
-      - lucas
+      - main
 
 jobs:
   deploy:
