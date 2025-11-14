@@ -1,108 +1,136 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/sidebar/Sidebar";
 import { ServiceStats } from "../components/services/ServiceStats";
 import { ServiceGrid } from "../components/services/ServiceGrid";
 import { ServiceDialog } from "../components/services/ServiceDialog";
+import serviceService from "../services/service.service";
+import { Service, ServiceFormData } from "../types/service.types";
+import { toast } from "sonner";
 
 const Services = () => {
-  const [services, setServices] = useState([
-    {
-      id: "1",
-      name: "Community Management",
-      code: "CM",
-      description: "Gestion des réseaux sociaux et de la communauté en ligne",
-      color: "#10B981",
-      isActive: true
-    },
-    {
-      id: "2",
-      name: "Création Visuelle",
-      code: "CV",
-      description: "Design graphique, création de contenus visuels",
-      color: "#F59E0B",
-      isActive: true
-    },
-    {
-      id: "3",
-      name: "Informatique",
-      code: "IT",
-      description: "Développement, infrastructure et support technique",
-      color: "#3B82F6",
-      isActive: true
-    },
-    {
-      id: "4",
-      name: "Gestion Relation Client",
-      code: "GRC",
-      description: "Support client, service après-vente",
-      color: "#EF4444",
-      isActive: true
-    },
-    {
-      id: "5",
-      name: "Administration",
-      code: "ADM",
-      description: "Gestion administrative et ressources humaines",
-      color: "#8B5CF6",
-      isActive: false
-    }
-  ]);
-
+  const [services, setServices] = useState<Service[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingService, setEditingService] = useState(null);
+  const [editingService, setEditingService] = useState<Service | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Charger les services au montage du composant
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setIsLoading(true);
+        const servicesData = await serviceService.getAllServices(true);
+        console.log(servicesData);
+        setServices(servicesData);
+      } catch (error) {
+        console.error("Erreur lors du chargement des services:", error);
+        toast.error("Impossible de charger les services");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchServices();
+  }, []);
 
   const handleCreate = () => {
     setEditingService(null);
     setIsDialogOpen(true);
   };
 
-  const handleEdit = (service) => {
+  const handleEdit = (service: Service) => {
     setEditingService(service);
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (serviceId) => {
-    if (confirm("Êtes-vous sûr de vouloir supprimer ce département ?")) {
-      setServices(services.filter(s => s.id !== serviceId));
+  const handleDelete = async (serviceId: string) => {
+    if (confirm("Êtes-vous sûr de vouloir désactiver ce département ?")) {
+      try {
+        await serviceService.deleteService(serviceId);
+        setServices(
+          services.map((s) =>
+            s.id === serviceId ? { ...s, isActive: false } : s
+          )
+        );
+        toast.success("Département désactivé avec succès");
+      } catch (error) {
+        console.error("Erreur lors de la supprimer du service:", error);
+        toast.error("Impossible de supprimer le département");
+      }
     }
   };
 
-  const handleToggleActive = (serviceId) => {
-    setServices(services.map(s => 
-      s.id === serviceId ? { ...s, isActive: !s.isActive } : s
-    ));
-  };
+  const handleToggleActive = async (serviceId: string) => {
+    try {
+      const service = services.find((s) => s.id === serviceId);
+      if (!service) return;
 
-  const handleSubmit = (formData) => {
-    if (editingService) {
-      // Update
-      setServices(services.map(s => 
-        s.id === editingService.id 
-          ? { ...s, ...formData }
-          : s
-      ));
-    } else {
-      // Create
-      const newService = {
-        id: Date.now().toString(),
-        ...formData,
-        isActive: true
-      };
-      setServices([...services, newService]);
+      // Si le service est actif, on le désactive
+      if (service.isActive) {
+        await serviceService.deactivateService(serviceId);
+        setServices(
+          services.map((s) =>
+            s.id === serviceId ? { ...s, isActive: false } : s
+          )
+        );
+        toast.success("Département désactivé avec succès");
+      } else {
+        // Si le service est inactif, on le réactive
+        await serviceService.activateService(serviceId);
+        setServices(
+          services.map((s) =>
+            s.id === serviceId ? { ...s, isActive: true } : s
+          )
+        );
+        toast.success("Département activé avec succès");
+      }
+    } catch (error) {
+      console.error("Erreur lors du changement de statut du service:", error);
+      toast.error("Impossible de changer le statut du département");
     }
-    
-    setIsDialogOpen(false);
   };
 
-  const activeServices = services.filter(s => s.isActive);
-  const inactiveServices = services.filter(s => !s.isActive);
+  const handleSubmit = async (formData: ServiceFormData) => {
+    try {
+      setIsSubmitting(true);
+
+      if (editingService) {
+        const updatedService = await serviceService.updateService(
+          editingService.id,
+          formData
+        );
+        setServices(
+          services.map((s) => (s.id === editingService.id ? updatedService : s))
+        );
+        toast.success("Département mis à jour avec succès");
+      } else {
+        const newService = await serviceService.createService(formData);
+        setServices([...services, newService]);
+        toast.success("Département créé avec succès");
+      }
+
+      setIsDialogOpen(false);
+    } catch (error) {
+      console.error("Erreur lors de l'enregistrement du service:", error);
+      toast.error(
+        editingService
+          ? "Impossible de mettre à jour le département"
+          : "Impossible de créer le département"
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const activeServices = services.filter((s) => s.isActive);
+  const inactiveServices = services.filter((s) => !s.isActive);
 
   return (
     <div className="min-h-screen bg-background flex">
       <Sidebar />
-      
+
       {/* Ajout de ml-64 et h-screen overflow-auto */}
       <div className="flex-1 ml-64 overflow-auto h-screen">
         <main className="container mx-auto px-4 py-8">
@@ -110,14 +138,17 @@ const Services = () => {
             {/* Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-foreground">Départements</h1>
+                <h1 className="text-3xl font-bold text-foreground">
+                  Départements
+                </h1>
                 <p className="text-muted-foreground mt-1">
                   Gérez les départements de votre entreprise
                 </p>
               </div>
-              <Button 
+              <Button
                 onClick={handleCreate}
                 className="bg-[rgb(101,193,255)] hover:bg-[rgb(81,173,235)] text-white"
+                disabled={isLoading}
               >
                 <Plus className="mr-2 h-4 w-4" />
                 Nouveau département
@@ -125,7 +156,7 @@ const Services = () => {
             </div>
 
             {/* Stats */}
-            <ServiceStats 
+            <ServiceStats
               total={services.length}
               active={activeServices.length}
               inactive={inactiveServices.length}

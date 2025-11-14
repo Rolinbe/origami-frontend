@@ -4,8 +4,7 @@
 Scanner de QR codes sur badges
 Mode Entrée / Sortie
 Affichage de confirmation (photo, nom, heure)
-Fonctionne hors-ligne avec synchronisation
-Interface simple et rapide
+Interface simple et rapide Material UI
 
 # APPLICATION WEB (Admin unique)
 
@@ -48,19 +47,26 @@ Administrateur (gestionnaire unique)
 4. Admin imprime le badge
 
 ### **2. Pointage quotidien**
-1. Employé arrive avec son badge
-2. Scanne le QR code sur la tablette à l'entrée
-3. L'app affiche :
-   - Photo de l'employé
-   - Nom + Service
-   - Heure de pointage
-   - Message de confirmation
-4. Données enregistrées (même hors-ligne)
 
-### **3. Sortie**
-1. Même processus au départ
-2. Le système détecte automatiquement si c'est une entrée ou sortie
-3. Calcule la durée de travail
+**a) Entrée**
+1. L’employé arrive avec son badge (QR).
+2. Il scanne le QR code sur la tablette/telephone à l’entrée.
+3. L’application affiche immédiatement :
+   - Photo de l’employé
+   - Nom + Service
+   - Heure de pointage (horodatage exact)
+   - Message visuel + sonore de confirmation
+4. Les données sont enregistrées localement si le réseau est indisponible (mode hors‑ligne) et synchronisées automatiquement dès le retour de la connexion.
+5. Anti‑double scan : si un nouveau scan intervient dans une courte fenêtre (configurable), il est ignoré avec un message d’info.
+
+**b) Sortie**
+1. Même processus de scan au départ.
+2. Le système détecte automatiquement s’il s’agit d’une sortie (si la dernière action du jour était une entrée).
+3. Calcul automatique de la durée de travail du jour (entre dernière entrée et cette sortie).
+4. Affichage d’un récapitulatif rapide (heure de sortie + durée travaillée).
+5. Gestion des cas particuliers :
+   - Si aucune entrée n’existe, un message d’erreur guidé est affiché.
+   - Si une entrée précédente n’a pas été synchronisée, la synchronisation est tentée avant le calcul.
 
 ---
 

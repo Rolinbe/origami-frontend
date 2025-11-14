@@ -1,107 +1,268 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Users, UserCheck, UserX, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sidebar } from "@/components/sidebar/Sidebar";
+import { toast } from "sonner";
 
 // Import des composants
 import { EmployeeStatsCard } from "@/components/employees/EmployeeStatsCard";
-import { EmployeeFiltersComponent, EmployeeFilters as FilterType } from "@/components/employees/EmployeeFilters";
+import {
+  EmployeeFiltersComponent,
+  EmployeeFilters as FilterType,
+} from "@/components/employees/EmployeeFilters";
 import { EmployeeTable } from "@/components/employees/EmployeeTable";
 import { EmployeeDetailsDialog } from "@/components/employees/EmployeeDetailsDialog";
 import { PendingEmployeesCard } from "@/components/employees/PendingEmployeesCard";
 import { Pagination } from "@/components/employees/Pagination";
 
-// Import des données mockées et types
-import { mockServices, mockEmployees, Employee } from "@/data/mockData";
+// Import des services et types
+import employeeService from "@/services/employee.service";
+import serviceService from "@/services/service.service";
+import {
+  Employee,
+  Service,
+  EmployeeFilters,
+  EmployeeFormData,
+} from "@/types/employee.types";
+import { EmployeeDialog } from "@/components/employees/EmployeeDialog";
 
 const Employees: React.FC = () => {
-  const [employees, setEmployees] = useState<Employee[]>(mockEmployees);
-  const [filters, setFilters] = useState<FilterType>({
-    search: '',
-    status: 'all',
-    employeeType: 'all',
-    service: 'all'
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [filters, setFilters] = useState<EmployeeFilters>({
+    search: "",
+    status: "all",
+    employeeType: "all",
+    service: "all",
   });
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [totalPages, setTotalPages] = useState<number>(1);
+  const [totalEmployees, setTotalEmployees] = useState<number>(0);
+  const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(
+    null
+  );
+
+  const [isEmployeeDialogOpen, setIsEmployeeDialogOpen] = useState(false);
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState<boolean>(false);
-  const itemsPerPage = 5;
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
-  // Filtrage
-  const filteredEmployees = employees.filter(emp => {
-    const matchSearch = filters.search === '' || 
-      emp.firstName.toLowerCase().includes(filters.search.toLowerCase()) ||
-      emp.lastName.toLowerCase().includes(filters.search.toLowerCase()) ||
-      emp.email.toLowerCase().includes(filters.search.toLowerCase()) ||
-      emp.position.toLowerCase().includes(filters.search.toLowerCase());
-    
-    const matchStatus = filters.status === 'all' || 
-      (filters.status === 'active' && emp.isActive) ||
-      (filters.status === 'inactive' && !emp.isActive);
-    
-    const matchType = filters.employeeType === 'all' || emp.employeeType === filters.employeeType;
-    const matchService = filters.service === 'all' || emp.serviceId === filters.service;
+  const itemsPerPage = 10;
 
-    return matchSearch && matchStatus && matchType && matchService;
-  });
+  // Fonction principale de soumission (CRÉATION ET MODIFICATION)
+  const handleEmployeeSubmit = async (data: EmployeeFormData) => {
+    try {
+      setIsSubmitting(true);
 
-  // Pagination
-  const totalPages = Math.ceil(filteredEmployees.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const paginatedEmployees = filteredEmployees.slice(startIndex, startIndex + itemsPerPage);
+      if (editingEmployee) {
+        // MODE MODIFICATION
+        const updatedEmployee = await employeeService.updateEmployee(
+          editingEmployee.id,
+          data
+        );
+
+        // Mettre à jour l'employé dans la liste locale
+        setEmployees(
+          employees.map((e) =>
+            e.id === editingEmployee.id ? updatedEmployee : e
+          )
+        );
+
+        toast.success("Employé mis à jour avec succès");
+      } else {
+        // MODE CRÉATION
+        const newEmployee = await employeeService.createEmployee(data);
+
+        // Ajouter le nouvel employé à la liste locale
+        setEmployees([...employees, newEmployee]);
+        setTotalEmployees(totalEmployees + 1);
+
+        toast.success("Employé créé avec succès");
+      }
+
+      // Fermer le dialogue et réinitialiser l'état d'édition
+      setIsEmployeeDialogOpen(false);
+      setEditingEmployee(null);
+    } catch (error) {
+      console.error("Erreur lors de l'enregistrement de l'employé:", error);
+      toast.error(
+        editingEmployee
+          ? "Impossible de mettre à jour l'employé"
+          : "Impossible de créer l'employé"
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCreateEmployee = () => {
+    setEditingEmployee(null);
+    setIsEmployeeDialogOpen(true);
+  };
+
+  const handleEditEmployee = (employee: Employee) => {
+    setEditingEmployee(employee);
+    setIsEmployeeDialogOpen(true);
+  };
+
+  // Charger les services au montage du composant
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        const servicesData = await serviceService.getAllServices();
+        setServices(servicesData);
+      } catch (error) {
+        console.error("Erreur lors du chargement des services:", error);
+        toast.error("Impossible de charger les services");
+      }
+    };
+
+    fetchServices();
+  }, []);
+
+  // Charger les employés lorsque les filtres ou la page changent
+  useEffect(() => {
+    const fetchEmployees = async () => {
+      try {
+        setIsLoading(true);
+        const response = await employeeService.getAllEmployees(
+          currentPage,
+          itemsPerPage,
+          filters
+        );
+
+        setEmployees(response.employees);
+        setTotalPages(response.totalPages);
+        setTotalEmployees(response.totalEmployees);
+      } catch (error) {
+        console.error("Erreur lors du chargement des employés:", error);
+        toast.error("Impossible de charger les employés");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchEmployees();
+  }, [currentPage, filters]);
 
   // Statistiques
   const stats = {
-    total: employees.length,
-    active: employees.filter(e => e.isActive).length,
-    inactive: employees.filter(e => !e.isActive).length,
-    interns: employees.filter(e => e.employeeType === 'intern').length
+    total: totalEmployees,
+    active: employees.filter((e) => e.isActive).length,
+    inactive: employees.filter((e) => !e.isActive).length,
+    interns: employees.filter((e) => e.employeeType === "intern").length,
   };
-
-  const pendingEmployees = employees.filter(e => !e.isActive);
 
   // Actions
-  const handleValidate = (id: string): void => {
-    setEmployees(employees.map(e => 
-      e.id === id ? { ...e, isActive: true } : e
-    ));
-  };
+  const handleValidate = async (id: string): Promise<void> => {
+    try {
+      setIsSubmitting(true);
+      const updatedEmployee = await employeeService.validateEmployee(id);
 
-  const handleDeactivate = (id: string): void => {
-    if (confirm("Êtes-vous sûr de vouloir désactiver cet employé ?")) {
-      setEmployees(employees.map(e => 
-        e.id === id ? { ...e, isActive: false } : e
-      ));
+      // Mettre à jour l'employé dans la liste
+      setEmployees(employees.map((e) => (e.id === id ? updatedEmployee : e)));
+
+      toast.success("Employé validé avec succès");
+    } catch (error) {
+      console.error("Erreur lors de la validation de l'employé:", error);
+      toast.error("Impossible de valider cet employé");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleDelete = (id: string): void => {
-    if (confirm("Êtes-vous sûr de vouloir supprimer cet employé ? Cette action est irréversible.")) {
-      setEmployees(employees.filter(e => e.id !== id));
+  const handleDeactivate = async (id: string): Promise<void> => {
+    if (!confirm("Êtes-vous sûr de vouloir désactiver cet employé ?")) return;
+
+    try {
+      setIsSubmitting(true);
+      const updatedEmployee = await employeeService.deactivateEmployee(id);
+
+      // Mettre à jour l'employé dans la liste
+      setEmployees(employees.map((e) => (e.id === id ? updatedEmployee : e)));
+
+      toast.success("Employé désactivé avec succès");
+    } catch (error) {
+      console.error("Erreur lors de la désactivation de l'employé:", error);
+      toast.error("Impossible de désactiver cet employé");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const handleViewDetails = (employee: Employee): void => {
-    setSelectedEmployee(employee);
-    setIsDetailsOpen(true);
+  const handleDelete = async (id: string): Promise<void> => {
+    if (
+      !confirm(
+        "Êtes-vous sûr de vouloir supprimer cet employé ? Cette action est irréversible."
+      )
+    )
+      return;
+
+    try {
+      setIsSubmitting(true);
+      await employeeService.deleteEmployee(id);
+
+      // Mettre à jour la liste
+      setEmployees(employees.filter((e) => e.id !== id));
+      setTotalEmployees(totalEmployees - 1);
+
+      toast.success("Employé supprimé avec succès");
+    } catch (error) {
+      console.error("Erreur lors de la suppression de l'employé:", error);
+      toast.error("Impossible de supprimer cet employé");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleViewDetails = async (employee: Employee): Promise<void> => {
+    try {
+      // Récupérer les détails complets de l'employé
+      const employeeDetails = await employeeService.getEmployeeById(
+        employee.id
+      );
+      setSelectedEmployee(employeeDetails);
+      setIsDetailsOpen(true);
+    } catch (error) {
+      console.error(
+        "Erreur lors de la récupération des détails de l'employé:",
+        error
+      );
+      toast.error("Impossible de récupérer les détails de l'employé");
+    }
+  };
+
+  const handleFilterChange = (newFilters: EmployeeFilters): void => {
+    setFilters(newFilters);
+    setCurrentPage(1); // Réinitialiser à la première page lors du changement de filtres
+  };
+
+  const handlePageChange = (page: number): void => {
+    setCurrentPage(page);
   };
 
   return (
     <div className="min-h-screen bg-background flex">
       <Sidebar />
-      
+
       <div className="flex-1 ml-64 overflow-auto h-screen">
         <main className="container mx-auto px-4 py-8">
           <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold text-foreground">Gestion des employés</h1>
+                <h1 className="text-3xl font-bold text-foreground">
+                  Gestion des employés
+                </h1>
                 <p className="text-muted-foreground mt-1">
                   Gérez et suivez tous vos employés
                 </p>
               </div>
-              <Button className="bg-primary hover:bg-primary/90">
+              <Button
+                className="bg-primary hover:bg-primary/90"
+                onClick={handleCreateEmployee}
+              >
                 <UserPlus className="mr-2 h-4 w-4" />
                 Nouvel employé
               </Button>
@@ -138,31 +299,23 @@ const Employees: React.FC = () => {
               />
             </div>
 
-            {/* En attente + Filtres */}
-            <div className="grid gap-6 lg:grid-cols-3">
-              <div className="lg:col-span-2">
-                <EmployeeFiltersComponent 
-                  filters={filters} 
-                  onFilterChange={setFilters}
-                  services={mockServices}
-                />
-              </div>
-              <div>
-                <PendingEmployeesCard 
-                  employees={pendingEmployees} 
-                  onValidate={handleValidate}
-                />
-              </div>
-            </div>
+            {/* Filtres */}
+            <EmployeeFiltersComponent
+              filters={filters}
+              onFilterChange={handleFilterChange}
+              services={services}
+            />
 
             {/* Table */}
             <EmployeeTable
-              employees={paginatedEmployees}
-              services={mockServices}
+              employees={employees}
+              services={services}
               onViewDetails={handleViewDetails}
               onValidate={handleValidate}
               onDeactivate={handleDeactivate}
+              onEdit={handleEditEmployee}
               onDelete={handleDelete}
+              isLoading={isLoading}
             />
 
             {/* Pagination */}
@@ -170,17 +323,25 @@ const Employees: React.FC = () => {
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}
-                onPageChange={setCurrentPage}
+                onPageChange={handlePageChange}
               />
             )}
           </div>
         </main>
       </div>
+      <EmployeeDialog
+        open={isEmployeeDialogOpen}
+        onOpenChange={setIsEmployeeDialogOpen}
+        employee={editingEmployee}
+        onSubmit={handleEmployeeSubmit}
+        services={services}
+        isLoading={isSubmitting}
+      />
 
       {/* Dialog détails */}
       <EmployeeDetailsDialog
         employee={selectedEmployee}
-        services={mockServices}
+        services={services}
         open={isDetailsOpen}
         onOpenChange={setIsDetailsOpen}
       />

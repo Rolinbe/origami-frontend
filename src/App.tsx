@@ -9,25 +9,30 @@ import Dashboard from "./pages/Dashboard";
 import Services from "./pages/Services";
 import Employees from "./pages/Employees";
 import BadgeManagement from "./pages/BadgeManagement";
+import SettingsPage from "./pages/Settings";
+import { AttendanceSettingsProvider } from "./contexts/AttendanceSettingsContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Auth />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/services" element={<Services />} />
-          <Route path="/employees" element={<Employees />} />
-          <Route path="/badges" element={<BadgeManagement />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <AttendanceSettingsProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Auth />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/services" element={<Services />} />
+            <Route path="/employees" element={<Employees />} />
+            <Route path="/badges" element={<BadgeManagement />} />
+            <Route path="/settings" element={<SettingsPage />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </AttendanceSettingsProvider>
   </QueryClientProvider>
 );
 
