@@ -10,10 +10,10 @@ services:
     container_name: admin_origami_web
     restart: unless-stopped
     ports:
-      - "8085:80"  # Port externe pour admin.origami.mg
+      - "8085:80"
     networks:
-      - nginx_proxy_network  # Connecter au réseau du reverse proxy
+      - nginx_proxy_network
 
-# networks:
-#   nginx_proxy_network:
-#     external: true  # Utilise le réseau existant du reverse proxy
+networks:
+  nginx_proxy_network:
+    external: true
