@@ -1,0 +1,136 @@
+name: Deploy admin.origami.mg to VPS
+
+on:
+  push:
+    branches:
+      - lucas
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: 🔔 Début du déploiement
+        run: |
+          echo "╔════════════════════════════════════════╗"
+          echo "║   🚀 Déploiement de admin.origami.mg  ║"
+          echo "╚════════════════════════════════════════╝"
+          echo "📦 Branch: ${{ github.ref_name }}"
+          echo "👤 Par: ${{ github.actor }}"
+          echo "💬 Commit: ${{ github.event.head_commit.message }}"
+
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📤 Synchronisation des fichiers vers le VPS
+        run: |
+          echo "📤 Transfert des fichiers via rsync..."
+          
+          # Créer le fichier de clé SSH temporaire
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          
+          # Ajouter le host aux known_hosts
+          ssh-keyscan -H ${{ secrets.VPS_HOST }} >> ~/.ssh/known_hosts
+          
+          # Créer le dossier de destination sur le VPS
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }} \
+            "mkdir -p /home/lucas/projets/origami_org/frontend/app"
+          
+          # Synchroniser les fichiers de l'application
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            --exclude '.git' \
+            --exclude 'node_modules' \
+            --exclude '.env' \
+            --exclude 'dist' \
+            --exclude '.vite' \
+            ./ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/lucas/projets/origami_org/frontend/app/
+          
+          # Synchroniser deploy.sh à la racine
+          rsync -avz \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            deploy.sh ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:/home/lucas/projets/origami_org/frontend/
+          
+          echo "✅ Fichiers synchronisés"
+
+      - name: 🐳 Rebuild et redémarrage Docker
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            echo "🐳 Reconstruction et redémarrage du conteneur Docker..."
+            cd /home/lucas/projets/origami_org/frontend/
+            
+            # Vérifier que deploy.sh existe
+            if [ ! -f "deploy.sh" ]; then
+              echo "❌ Erreur: deploy.sh n'existe pas"
+              echo "📁 Contenu du dossier:"
+              ls -la
+              exit 1
+            fi
+            
+            # Rendre le script exécutable
+            chmod +x deploy.sh
+            
+            # Exécuter le déploiement
+            bash deploy.sh
+
+      - name: ✅ Vérification du déploiement
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            echo "🔍 Vérification du conteneur admin_origami_web..."
+            
+            if docker ps | grep -q admin_origami_web; then
+              echo "✅ Le conteneur admin_origami_web est en cours d'exécution"
+              echo ""
+              echo "📊 Statut du conteneur:"
+              docker ps --filter "name=admin_origami_web" --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+              echo ""
+              echo "🌐 Application accessible sur: http://admin.origami.mg"
+            else
+              echo "❌ Le conteneur admin_origami_web n'est pas en cours d'exécution"
+              echo "📋 Logs du conteneur:"
+              docker logs admin_origami_web --tail 50 2>&1 || echo "Pas de logs disponibles"
+              exit 1
+            fi
+            
+            echo ""
+            echo "🔍 Vérification du reverse proxy..."
+            if docker ps | grep -q nginx_reverse_proxy; then
+              echo "✅ Le reverse proxy Nginx fonctionne"
+            else
+              echo "⚠️  Le reverse proxy Nginx ne fonctionne pas"
+            fi
+
+      - name: 🎉 Déploiement réussi
+        if: success()
+        run: |
+          echo "╔════════════════════════════════════════╗"
+          echo "║   ✅ Déploiement réussi !             ║"
+          echo "╚════════════════════════════════════════╝"
+          echo "🌐 Site: http://admin.origami.mg"
+          echo "🐳 Conteneur: admin_origami_web"
+          echo "📦 Port: 8085"
+          echo "📦 Commit: ${{ github.sha }}"
+
+      - name: ❌ Échec du déploiement
+        if: failure()
+        run: |
+          echo "╔════════════════════════════════════════╗"
+          echo "║   ❌ Le déploiement a échoué          ║"
+          echo "╚════════════════════════════════════════╝"
+          echo "📋 Vérifiez les logs ci-dessus"
+          echo "💡 Conseils de dépannage:"
+          echo "   - Vérifiez que deploy.sh existe dans votre repo"
+          echo "   - Vérifiez les permissions sur le VPS"
+          echo "   - Consultez les logs Docker si disponibles"

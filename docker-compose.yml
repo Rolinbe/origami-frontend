@@ -1,0 +1,19 @@
+version: '3.8'
+
+name: admin_origami
+
+services:
+  admin_origami_web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: admin_origami_web
+    restart: unless-stopped
+    ports:
+      - "8085:80"  # Port externe pour admin.origami.mg
+    networks:
+      - nginx_proxy_network  # Connecter au réseau du reverse proxy
+
+networks:
+  nginx_proxy_network:
+    external: true  # Utilise le réseau existant du reverse proxy
