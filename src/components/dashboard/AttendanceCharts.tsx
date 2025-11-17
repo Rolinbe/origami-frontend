@@ -3,8 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { addDays, format, startOfWeek } from "date-fns";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+import apiService from "@/services/api.service";
 
 interface WeeklyTrendEntry {
   date: string;
@@ -25,19 +24,13 @@ interface OverviewResponse {
 }
 
 const fetchWeeklyTrends = async (): Promise<WeeklyTrendResponse> => {
-  const response = await fetch(`${API_BASE_URL}/dashboard/weekly-trends`);
-  if (!response.ok) {
-    throw new Error("Impossible de récupérer les tendances hebdomadaires");
-  }
-  return response.json();
+  const response = await apiService.get<WeeklyTrendResponse>("/dashboard/weekly-trends");
+  return response.data;
 };
 
 const fetchOverview = async (): Promise<OverviewResponse> => {
-  const response = await fetch(`${API_BASE_URL}/dashboard/overview`);
-  if (!response.ok) {
-    throw new Error("Impossible de récupérer la synthèse du jour");
-  }
-  return response.json();
+  const response = await apiService.get<OverviewResponse>("/dashboard/overview");
+  return response.data;
 };
 
 const AttendanceCharts = () => {

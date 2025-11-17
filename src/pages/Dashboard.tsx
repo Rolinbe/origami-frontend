@@ -9,8 +9,7 @@ import LateEmployees from "@/components/dashboard/LateEmployees";
 import InternsList from "@/components/dashboard/InternsList";
 import AttendanceCharts from "@/components/dashboard/AttendanceCharts";
 import { Sidebar } from "@/components/sidebar/Sidebar";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+import apiService from "@/services/api.service";
 
 interface DashboardStatsResponse {
   totalEmployees: number;
@@ -20,11 +19,8 @@ interface DashboardStatsResponse {
 }
 
 const fetchDashboardStats = async (): Promise<DashboardStatsResponse> => {
-  const response = await fetch(`${API_BASE_URL}/dashboard/overview`);
-  if (!response.ok) {
-    throw new Error("Impossible de récupérer les statistiques du tableau de bord");
-  }
-  return response.json();
+  const response = await apiService.get<DashboardStatsResponse>("/dashboard/overview");
+  return response.data;
 };
 
 const Dashboard = () => {

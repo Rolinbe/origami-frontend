@@ -5,8 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useAttendanceSettings } from "@/contexts/AttendanceSettingsContext";
-
-const API_BASE_URL = import.meta.env.VITE_API_URL;
+import apiService from "@/services/api.service";
 
 interface Intern {
   id: string;
@@ -26,12 +25,8 @@ interface EnhancedIntern extends Intern {
 }
 
 const fetchInterns = async (): Promise<Intern[]> => {
-  const response = await fetch(`${API_BASE_URL}/scan/interns`);
-  if (!response.ok) {
-    throw new Error("Impossible de récupérer les stagiaires");
-  }
-  const data = await response.json();
-  return data.interns ?? [];
+  const response = await apiService.get<{ interns?: Intern[] }>("/scan/interns");
+  return response.data.interns ?? [];
 };
 
 const parseTimeForDate = (time: string, baseDate: Date) => {

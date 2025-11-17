@@ -14,9 +14,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAttendanceSettings } from "@/contexts/AttendanceSettingsContext";
+import apiService from "@/services/api.service";
 
 const ITEMS_PER_PAGE = 5;
-const API_BASE_URL = import.meta.env.VITE_API_URL;
 
 type ScanType = "check_in" | "check_out";
 
@@ -59,15 +59,10 @@ const isWithinRange = (value: Date, start: Date, end: Date) => {
 };
 
 const fetchAttendanceHistory = async (): Promise<ScanHistoryItem[]> => {
-  const url = new URL(`${API_BASE_URL}/scan/history`);
-  url.searchParams.set("limit", "200");
-
-  const response = await fetch(url.toString());
-  if (!response.ok) {
-    throw new Error("Impossible de charger les pointages");
-  }
-  const data = await response.json();
-  return data.scanLogs ?? [];
+  const response = await apiService.get<{ scanLogs?: ScanHistoryItem[] }>(
+    "/scan/history?limit=200"
+  );
+  return response.data.scanLogs ?? [];
 };
 
 const AttendanceList = () => {
