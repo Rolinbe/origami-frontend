@@ -6,7 +6,7 @@ class ApiService {
 
   constructor() {
     this.api = axios.create({
-      baseURL: "https://api.origami.mg/api",
+      baseURL: "http://localhost:5000/api",
       headers: {
         "Content-Type": "application/json",
       },

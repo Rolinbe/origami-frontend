@@ -10,6 +10,7 @@ import Services from "./pages/Services";
 import Employees from "./pages/Employees";
 import BadgeManagement from "./pages/BadgeManagement";
 import SettingsPage from "./pages/Settings";
+import Reports from "./pages/Reports";
 import { AttendanceSettingsProvider } from "./contexts/AttendanceSettingsContext";
 import { AuthProvider, useAuthContext } from "./store/AuthContext";
 
@@ -72,6 +73,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <BadgeManagement />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/reports"
+        element={
+          <ProtectedRoute>
+            <Reports />
           </ProtectedRoute>
         }
       />
