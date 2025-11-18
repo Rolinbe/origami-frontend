@@ -9,7 +9,7 @@ interface NavGroupProps {
 }
 
 export const NavGroup = ({ item }: NavGroupProps) => {
-  const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(true);
 
   if (item.submenu) {
     return (
