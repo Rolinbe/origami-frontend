@@ -123,9 +123,21 @@ export const EmployeeDialog = ({
   };
 
   const handleSubmit = () => {
-    if (validateForm()) {
-      onSubmit(formData);
+    if (!validateForm()) {
+      return;
     }
+
+    const sanitizedData: EmployeeFormData = {
+      ...formData,
+      serviceId: formData.serviceId?.trim() ? formData.serviceId : undefined,
+      department: formData.department?.trim() ? formData.department : undefined,
+      phone: formData.phone?.trim() ? formData.phone : undefined,
+      contractEndDate: formData.contractEndDate?.trim()
+        ? formData.contractEndDate
+        : undefined,
+    };
+
+    onSubmit(sanitizedData);
   };
 
   return (
