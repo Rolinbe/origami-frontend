@@ -7,6 +7,7 @@ import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
+import { Icons } from "@/utils/icon";
 
 const Auth = () => {
   const [currentImage, setCurrentImage] = useState(0);
@@ -114,7 +115,7 @@ const Auth = () => {
           <div className="flex flex-col items-center text-center">
             <div className="w-64 h-32 flex items-center justify-center">
               <img 
-                src="./src/assets/icons/logo.png" 
+                src={Icons.logo} 
                 className="w-full h-24 object-contain" 
                 alt="Logo Origami Tech"
               />
