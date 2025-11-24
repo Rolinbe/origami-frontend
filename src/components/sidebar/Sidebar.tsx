@@ -15,6 +15,7 @@ import {
 import { useAuthContext } from "@/store/AuthContext";
 import { navigationItems } from "./navigationItems";
 import { NavGroup } from "./NavGroup";
+import logo from "@/assets/icons/logo.png";
 
 export const Sidebar = () => {
   const { logout } = useAuthContext();
@@ -32,14 +33,8 @@ export const Sidebar = () => {
   return (
     <aside className="w-64 bg-card border-r h-screen flex flex-col p-3 fixed left-0 top-0">
       {/* Header */}
-      <div className="mb-6 flex-shrink-0">
-        {/* Logo optionnel */}
-        {/* <img 
-          src="./src/assets/icons/logo.png" 
-          className="w-full h-auto object-contain" 
-          alt="Logo Origami Tech"
-        /> */}
-        {/* <h1 className="text-xl font-bold text-foreground">Système de Pointage</h1> */}
+      <div className="mb-8 mt-4 flex-shrink-0 flex items-center justify-center w-full">
+        <img src={logo} alt="Origami Tech" className="max-h-16 w-48 object-contain" />
       </div>
 
       {/* Navigation - Scrollable */}
