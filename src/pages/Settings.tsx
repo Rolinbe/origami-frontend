@@ -257,18 +257,20 @@ const SettingsPage = () => {
                     type="date"
                     className="w-auto"
                     value={newHoliday.date}
-                    onChange={(e) =>
-                      setNewHoliday((prev) => ({ ...prev, date: e.currentTarget.value }))
-                    }
+                    onChange={(e) => {
+                      const { value } = e.currentTarget;
+                      setNewHoliday((prev) => ({ ...prev, date: value }));
+                    }}
                     required
                   />
                   <Input
                     placeholder="Libellé (ex: Fête de l'Indépendance)"
                     className="flex-1 min-w-[200px]"
                     value={newHoliday.label}
-                    onChange={(e) =>
-                      setNewHoliday((prev) => ({ ...prev, label: e.currentTarget.value }))
-                    }
+                    onChange={(e) => {
+                      const { value } = e.currentTarget;
+                      setNewHoliday((prev) => ({ ...prev, label: value }));
+                    }}
                     required
                   />
                   <Button type="submit" disabled={isSavingHoliday}>
