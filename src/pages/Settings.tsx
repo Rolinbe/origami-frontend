@@ -143,7 +143,7 @@ const SettingsPage = () => {
     <div className="min-h-screen bg-app flex">
       <Sidebar />
       <div className="flex-1 ml-64 overflow-auto h-screen">
-        <main className="container mx-auto px-4 py-8">
+        <main className="container mx-auto px-4 py-8 animate-fade-in-up">
           <div className="max-w-4xl space-y-6">
             <PageHeader
               icon={Settings}

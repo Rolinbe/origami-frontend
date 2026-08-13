@@ -134,7 +134,7 @@ const Services = () => {
 
       {/* Ajout de ml-64 et h-screen overflow-auto */}
       <div className="flex-1 ml-64 overflow-auto h-screen">
-        <main className="container mx-auto px-4 py-8">
+        <main className="container mx-auto px-4 py-8 animate-fade-in-up">
           <div className="space-y-6">
             {/* Header */}
             <PageHeader

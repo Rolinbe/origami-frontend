@@ -314,7 +314,7 @@ const Employees: React.FC = () => {
       <Sidebar />
 
       <div className="flex-1 ml-64 overflow-auto h-screen">
-        <main className="container mx-auto px-4 py-8">
+        <main className="container mx-auto px-4 py-8 animate-fade-in-up">
           <div className="space-y-6">
             {/* Header */}
             <PageHeader
@@ -347,7 +347,7 @@ const Employees: React.FC = () => {
             />
 
             {/* Stats */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 stagger">
               <EmployeeStatsCard
                 title="Total Employés"
                 value={stats.total}

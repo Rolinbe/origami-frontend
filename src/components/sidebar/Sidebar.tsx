@@ -31,36 +31,62 @@ export const Sidebar = () => {
   };
 
   return (
-    <aside className="w-64 fixed left-0 top-0 z-30 flex h-screen flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
-      {/* Header */}
-      <div className="flex h-20 shrink-0 items-center justify-center border-b border-sidebar-border px-4">
-        <img
-          src={logo}
-          alt="Origami Tech"
-          className="max-h-14 w-full max-w-[11rem] object-contain"
+    <aside className="fixed left-0 top-0 z-30 flex h-screen w-64 flex-col overflow-hidden bg-[#0b1220] text-slate-100">
+      {/* Décor : halo indigo + trame de fond */}
+      <div className="pointer-events-none absolute inset-0">
+        <div className="absolute -top-28 right-[-5rem] h-72 w-72 rounded-full bg-indigo-600/30 blur-3xl" />
+        <div className="absolute -bottom-24 left-[-4rem] h-64 w-64 rounded-full bg-fuchsia-600/20 blur-3xl" />
+        <div
+          className="absolute inset-0 opacity-[0.05]"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, #fff 1px, transparent 1px), linear-gradient(to bottom, #fff 1px, transparent 1px)",
+            backgroundSize: "28px 28px",
+          }}
         />
       </div>
 
+      {/* Header */}
+      <div className="relative shrink-0 border-b border-white/10 px-5 py-5">
+        <div className="flex h-14 items-center justify-center rounded-xl bg-white/95 shadow-lg shadow-black/20">
+          <img
+            src={logo}
+            alt="Origami Tech"
+            className="max-h-11 w-full max-w-[9.5rem] object-contain"
+          />
+        </div>
+        <p className="mt-2.5 text-center text-[10px] font-medium uppercase tracking-[0.22em] text-slate-400">
+          Système de présence
+        </p>
+      </div>
+
       {/* Navigation - Scrollable */}
-      <nav className="scrollbar-thin flex-1 space-y-1 overflow-y-auto px-3 py-5 min-h-0">
+      <nav className="scrollbar-thin relative flex-1 space-y-1 overflow-y-auto px-3 py-5 min-h-0">
         {navigationItems.map((item, index) => (
           <NavGroup key={index} item={item} />
         ))}
       </nav>
 
       {/* Footer - Fixed at bottom */}
-      <div className="shrink-0 space-y-3 border-t border-sidebar-border p-3">
-        <div className="flex items-center gap-2.5 rounded-lg bg-muted/50 px-3 py-2.5">
-          <ShieldCheck className="h-4 w-4 text-primary" />
-          <p className="text-xs font-medium text-muted-foreground">
-            Origami Tech · Espace admin
-          </p>
+      <div className="relative shrink-0 space-y-3 border-t border-white/10 p-3">
+        <div className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 backdrop-blur-sm">
+          <span className="relative flex h-2 w-2">
+            <span className="absolute inline-flex h-full w-full animate-ping-slow rounded-full bg-emerald-400" />
+            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-400" />
+          </span>
+          <div className="min-w-0">
+            <p className="truncate text-xs font-semibold text-white">Espace admin</p>
+            <p className="truncate text-[10px] text-slate-400">
+              Origami Tech · En ligne
+            </p>
+          </div>
+          <ShieldCheck className="ml-auto h-4 w-4 shrink-0 text-indigo-300" />
         </div>
         <AlertDialog>
           <AlertDialogTrigger asChild>
             <Button
-              variant="outline"
-              className="w-full"
+              variant="ghost"
+              className="w-full border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10 hover:text-white"
               size="sm"
               disabled={isLoggingOut}
             >

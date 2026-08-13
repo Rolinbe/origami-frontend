@@ -202,7 +202,7 @@ const BadgeManagement: React.FC = () => {
   return (
     <div className="flex min-h-screen bg-app">
       <Sidebar />
-      <div className="flex-1 ml-64 px-4 py-8 overflow-x-hidden">
+      <div className="flex-1 ml-64 px-4 py-8 overflow-x-hidden animate-fade-in-up">
         <div className="space-y-6">
           {/* Header */}
           <PageHeader
@@ -259,7 +259,7 @@ const BadgeManagement: React.FC = () => {
                 ))}
               </div>
             ) : (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 stagger">
                 {filteredBadges.map((badge) => (
                   <BadgeCard
                     key={badge.id}

@@ -68,7 +68,7 @@ const Dashboard = () => {
       <Sidebar />
 
       <div className="flex-1 ml-64 overflow-auto h-screen">
-        <main className="container mx-auto px-4 py-8">
+        <main className="container mx-auto px-4 py-8 animate-fade-in-up">
           <PageHeader
             icon={LayoutDashboard}
             title="Tableau de bord principal"
@@ -77,11 +77,12 @@ const Dashboard = () => {
           />
 
           <div className="space-y-8">
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 stagger">
               <StatsCard
                 title="Total Employés"
                 value={isError ? "—" : stats.total}
                 icon={Users}
+                delay={60}
                 description={
                   isError
                     ? (error as Error)?.message ?? "Erreur de chargement"
@@ -93,6 +94,7 @@ const Dashboard = () => {
                 value={isError ? "—" : stats.present}
                 icon={UserCheck}
                 variant="success"
+                delay={140}
                 description="À l'heure aujourd'hui"
               />
               <StatsCard
@@ -100,6 +102,7 @@ const Dashboard = () => {
                 value={isError ? "—" : stats.late}
                 icon={Clock}
                 variant="warning"
+                delay={220}
                 description="En retard aujourd'hui"
               />
               <StatsCard
@@ -107,13 +110,16 @@ const Dashboard = () => {
                 value={isError ? "—" : stats.absent}
                 icon={UserX}
                 variant="destructive"
+                delay={300}
                 description="Non pointés aujourd'hui"
               />
             </div>
 
-            <LiveActivityFeed />
+            <div className="stagger">
+              <LiveActivityFeed />
+            </div>
 
-            <div className="grid gap-6 lg:grid-cols-3">
+            <div className="grid gap-6 lg:grid-cols-3 stagger">
               <div className="lg:col-span-2">
                 <AttendanceList />
               </div>
@@ -122,7 +128,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-3">
+            <div className="grid gap-6 lg:grid-cols-3 stagger">
               <div className="lg:col-span-2">
                 <AttendanceCharts />
               </div>
@@ -131,7 +137,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-3">
+            <div className="grid gap-6 lg:grid-cols-3 stagger">
               <PresentEmployees />
               <LateEmployees />
               <AbsentList />

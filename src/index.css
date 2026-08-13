@@ -159,6 +159,88 @@ All colors MUST be HSL.
   }
 }
 
+/* Interactions globales : curseur, press feedback, transitions fluides */
+@layer base {
+  button:not(:disabled),
+  [role="button"],
+  a,
+  label[for] {
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  button,
+  a {
+    transition-property: color, background-color, border-color, box-shadow,
+      transform, opacity;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 200ms;
+  }
+
+  button:not(:disabled):active,
+  [role="button"]:active {
+    transform: scale(0.97);
+  }
+
+  ::selection {
+    background-color: hsl(var(--primary) / 0.22);
+    color: hsl(var(--primary));
+  }
+}
+
+/* Entrée en cascade (stagger) : anime les enfants un par un */
+@layer utilities {
+  .stagger > * {
+    opacity: 0;
+    animation: fade-in-up 0.55s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  .stagger > *:nth-child(1) { animation-delay: 60ms; }
+  .stagger > *:nth-child(2) { animation-delay: 120ms; }
+  .stagger > *:nth-child(3) { animation-delay: 180ms; }
+  .stagger > *:nth-child(4) { animation-delay: 240ms; }
+  .stagger > *:nth-child(5) { animation-delay: 300ms; }
+  .stagger > *:nth-child(6) { animation-delay: 360ms; }
+  .stagger > *:nth-child(7) { animation-delay: 420ms; }
+  .stagger > *:nth-child(8) { animation-delay: 480ms; }
+
+  /* Trait de lumière qui balaie un élément (hover) */
+  .shine {
+    position: relative;
+    overflow: hidden;
+  }
+  .shine::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translateX(-110%);
+    background: linear-gradient(
+      100deg,
+      transparent 20%,
+      rgba(255, 255, 255, 0.55) 50%,
+      transparent 80%
+    );
+    transition: transform 0.6s ease;
+    pointer-events: none;
+  }
+  .shine:hover::after {
+    transform: translateX(110%);
+  }
+
+  /* Fond dégradé animé pour accents */
+  .text-gradient {
+    background: linear-gradient(
+      120deg,
+      hsl(var(--primary)),
+      hsl(var(--chart-4)),
+      hsl(var(--primary))
+    );
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+}
+
 /* Scanner : ligne de balayage animée */
 @keyframes scan-sweep {
   0% {

@@ -25,8 +25,9 @@ export const PageHeader = ({
     >
       <div className="flex items-center gap-3.5">
         {Icon && (
-          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
-            <Icon className="h-6 w-6" strokeWidth={2} />
+          <div className="group relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-chart-4 to-chart-5 text-white shadow-lg shadow-primary/25 transition-transform duration-300 hover:-rotate-6 hover:scale-105">
+            <div className="absolute inset-0 animate-gradient-x bg-gradient-to-r from-transparent via-white/20 to-transparent bg-[length:200%_100%]" />
+            <Icon className="relative h-7 w-7" strokeWidth={2.1} />
           </div>
         )}
         <div>

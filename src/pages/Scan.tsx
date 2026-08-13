@@ -240,7 +240,7 @@ const Scan = () => {
     <div className="min-h-screen bg-app flex">
       <Sidebar />
       <div className="flex-1 ml-64 overflow-auto h-screen">
-        <main className="container mx-auto px-4 py-8 space-y-6">
+        <main className="container mx-auto px-4 py-8 space-y-6 animate-fade-in-up">
           <PageHeader
             icon={ScanBarcode}
             title="Poste de pointage"

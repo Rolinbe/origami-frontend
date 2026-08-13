@@ -13,6 +13,7 @@ import SettingsPage from "./pages/Settings";
 import Reports from "./pages/Reports";
 import Scan from "./pages/Scan";
 import ErrorBoundary from "./components/ErrorBoundary";
+import { CursorGlow } from "./components/CursorGlow";
 import { AttendanceSettingsProvider } from "./contexts/AttendanceSettingsContext";
 import { AuthProvider, useAuthContext } from "./store/AuthContext";
 
@@ -124,6 +125,7 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
+            <CursorGlow />
             <ErrorBoundary>
               <AppRoutes />
             </ErrorBoundary>

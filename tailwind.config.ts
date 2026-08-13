@@ -128,13 +128,60 @@ export default {
             transform: "translateY(0)",
           },
         },
+        "fade-in-scale": {
+          from: {
+            opacity: "0",
+            transform: "scale(0.94)",
+          },
+          to: {
+            opacity: "1",
+            transform: "scale(1)",
+          },
+        },
+        float: {
+          "0%, 100%": { transform: "translateY(0)" },
+          "50%": { transform: "translateY(-6px)" },
+        },
+        "glow-pulse": {
+          "0%, 100%": { boxShadow: "0 0 0 0 hsl(var(--primary) / 0.28)" },
+          "50%": { boxShadow: "0 0 0 8px hsl(var(--primary) / 0)" },
+        },
+        shimmer: {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(220%)" },
+        },
+        "gradient-x": {
+          "0%, 100%": { backgroundPosition: "0% 50%" },
+          "50%": { backgroundPosition: "100% 50%" },
+        },
+        pop: {
+          "0%": { transform: "scale(1)" },
+          "45%": { transform: "scale(1.14)" },
+          "100%": { transform: "scale(1)" },
+        },
+        "spin-slow": {
+          from: { transform: "rotate(0deg)" },
+          to: { transform: "rotate(360deg)" },
+        },
+        "ping-slow": {
+          "0%": { transform: "scale(1)", opacity: "0.6" },
+          "80%, 100%": { transform: "scale(2.1)", opacity: "0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "card-hover": "card-hover 0.3s ease-in-out forwards",
         "fade-in": "fade-in 0.4s ease-out",
-        "fade-in-up": "fade-in-up 0.4s ease-out",
+        "fade-in-up": "fade-in-up 0.5s cubic-bezier(0.22, 1, 0.36, 1)",
+        "fade-in-scale": "fade-in-scale 0.45s cubic-bezier(0.22, 1, 0.36, 1)",
+        float: "float 3.5s ease-in-out infinite",
+        "glow-pulse": "glow-pulse 2.4s ease-out infinite",
+        shimmer: "shimmer 2.2s ease-in-out infinite",
+        "gradient-x": "gradient-x 6s ease infinite",
+        pop: "pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1)",
+        "spin-slow": "spin-slow 8s linear infinite",
+        "ping-slow": "ping-slow 2.4s cubic-bezier(0, 0, 0.2, 1) infinite",
       },
     },
   },

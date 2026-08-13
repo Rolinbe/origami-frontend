@@ -1,6 +1,7 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useCountUp } from "@/hooks/useCountUp";
 
 interface StatsCardProps {
   title: string;
@@ -8,49 +9,87 @@ interface StatsCardProps {
   icon: LucideIcon;
   description?: string;
   variant?: "default" | "success" | "warning" | "destructive";
+  delay?: number;
 }
 
 const styleMap = {
   default: {
-    iconBg: "bg-primary/10",
-    iconColor: "text-primary",
+    iconBg: "bg-primary/10 group-hover:bg-primary",
+    ring: "from-primary/20 via-primary/5 to-transparent",
+    valueColor: "text-primary",
   },
   success: {
-    iconBg: "bg-success/10",
-    iconColor: "text-success",
+    iconBg: "bg-success/10 group-hover:bg-success",
+    ring: "from-success/20 via-success/5 to-transparent",
+    valueColor: "text-success",
   },
   warning: {
-    iconBg: "bg-warning/10",
-    iconColor: "text-warning",
+    iconBg: "bg-warning/10 group-hover:bg-warning",
+    ring: "from-warning/20 via-warning/5 to-transparent",
+    valueColor: "text-warning",
   },
   destructive: {
-    iconBg: "bg-destructive/10",
-    iconColor: "text-destructive",
+    iconBg: "bg-destructive/10 group-hover:bg-destructive",
+    ring: "from-destructive/20 via-destructive/5 to-transparent",
+    valueColor: "text-destructive",
   },
 };
 
-const StatsCard = ({ title, value, icon: Icon, description, variant = "default" }: StatsCardProps) => {
+const StatsCard = ({ title, value, icon: Icon, description, variant = "default", delay = 0 }: StatsCardProps) => {
   const styles = styleMap[variant];
+  const isNumeric = typeof value === "number";
+  const animatedValue = useCountUp(isNumeric ? (value as number) : 0, { delay });
 
   return (
-    <Card className="group transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lift">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        <div
-          className={cn(
-            "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-transform duration-300 group-hover:scale-110",
-            styles.iconBg
-          )}
-        >
-          <Icon className={cn("h-5 w-5", styles.iconColor)} />
-        </div>
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold tracking-tight">{value}</div>
-        {description && (
-          <p className="mt-1 text-xs text-muted-foreground">{description}</p>
+    <Card
+      className="group relative overflow-hidden rounded-xl transition-all duration-300 ease-out hover:-translate-y-1.5 hover:shadow-lift-lg"
+      style={{ animationDelay: `${delay}ms` }}
+    >
+      {/* Halo dégradé en haut de carte */}
+      <div
+        className={cn(
+          "pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b opacity-60 transition-opacity duration-300 group-hover:opacity-100",
+          styles.ring
         )}
-      </CardContent>
+      />
+
+      <div className="relative p-5">
+        <div className="flex items-center justify-between">
+          <p className="text-sm font-medium text-muted-foreground">{title}</p>
+          <div
+            className={cn(
+              "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-white/90 shadow-sm transition-all duration-300 ease-out group-hover:scale-110 group-hover:rotate-[6deg] group-hover:shadow-md",
+              styles.iconBg
+            )}
+          >
+            <Icon className="h-5 w-5" strokeWidth={2.1} />
+          </div>
+        </div>
+
+        <div className="mt-3">
+          <div className="flex items-baseline gap-2">
+            {isNumeric ? (
+              <span className={cn("text-3xl font-bold tracking-tight tabular-nums", styles.valueColor)}>
+                {animatedValue}
+              </span>
+            ) : (
+              <span className="text-3xl font-bold tracking-tight">{value}</span>
+            )}
+            {isNumeric && (
+              <span
+                className="h-px flex-1 translate-y-[-4px]"
+                style={{
+                  background:
+                    "repeating-linear-gradient(90deg, hsl(var(--border)), hsl(var(--border)) 4px, transparent 4px, transparent 8px)",
+                }}
+              />
+            )}
+          </div>
+          {description && (
+            <p className="mt-1.5 text-xs text-muted-foreground">{description}</p>
+          )}
+        </div>
+      </div>
     </Card>
   );
 };
