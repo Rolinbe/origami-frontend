@@ -16,7 +16,16 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { AttendanceSettingsProvider } from "./contexts/AttendanceSettingsContext";
 import { AuthProvider, useAuthContext } from "./store/AuthContext";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 0,
+      refetchOnMount: "always",
+      refetchOnWindowFocus: true,
+      retry: 2,
+    },
+  },
+});
 
 // Composant pour protéger les routes
 const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
