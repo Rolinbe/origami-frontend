@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Camera, ImagePlus, Trash2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -22,6 +23,30 @@ interface EmployeeDialogProps {
   isLoading?: boolean;
 }
 
+const readAndCompressPhoto = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const max = 360;
+        const scale = Math.min(1, max / Math.max(img.width, img.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.max(1, Math.round(img.width * scale));
+        canvas.height = Math.max(1, Math.round(img.height * scale));
+        const ctx = canvas.getContext("2d");
+        if (!ctx) return reject(new Error("Canvas indisponible"));
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      };
+      img.onerror = reject;
+      img.src = reader.result as string;
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+};
+
 export const EmployeeDialog = ({
   open,
   onOpenChange,
@@ -40,9 +65,11 @@ export const EmployeeDialog = ({
     serviceId: "",
     employeeType: "permanent",
     contractStartDate: format(new Date(), "yyyy-MM-dd"),
+    profileImage: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const photoInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (employee) {
@@ -57,6 +84,7 @@ export const EmployeeDialog = ({
         employeeType: employee.employeeType,
         contractStartDate: employee.contractStartDate,
         contractEndDate: employee.contractEndDate || "",
+        profileImage: employee.profileImage || "",
       });
     } else {
       setFormData({
@@ -70,10 +98,32 @@ export const EmployeeDialog = ({
         employeeType: "permanent",
         contractStartDate: format(new Date(), "yyyy-MM-dd"),
         contractEndDate: "",
+        profileImage: "",
       });
     }
     setErrors({});
   }, [employee, open]);
+
+  const handlePhotoChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setErrors((prev) => ({ ...prev, profileImage: "Image trop lourde (max 5 Mo)" }));
+      return;
+    }
+    try {
+      const dataUrl = await readAndCompressPhoto(file);
+      setFormData((prev) => ({ ...prev, profileImage: dataUrl }));
+      setErrors((prev) => ({ ...prev, profileImage: "" }));
+    } catch {
+      setErrors((prev) => ({ ...prev, profileImage: "Impossible de lire cette image" }));
+    }
+  };
+
+  const removePhoto = () => {
+    setFormData((prev) => ({ ...prev, profileImage: "" }));
+  };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -138,6 +188,65 @@ export const EmployeeDialog = ({
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
+          <div className="flex items-center gap-4">
+            <div className="relative">
+              <div className="h-20 w-20 rounded-full overflow-hidden border-2 border-muted bg-muted flex items-center justify-center">
+                {formData.profileImage ? (
+                  <img
+                    src={formData.profileImage}
+                    alt="Photo de profil"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="h-full w-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center text-white text-xl font-bold">
+                    {formData.firstName?.[0]}
+                    {formData.lastName?.[0]}
+                  </div>
+                )}
+              </div>
+              <button
+                type="button"
+                onClick={() => photoInputRef.current?.click()}
+                title="Changer la photo"
+                className="absolute -right-1 -bottom-1 flex h-7 w-7 items-center justify-center rounded-full bg-primary text-white shadow-md hover:bg-primary/90 transition-colors"
+              >
+                <Camera className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => photoInputRef.current?.click()}
+                >
+                  <ImagePlus className="mr-2 h-4 w-4" />
+                  {formData.profileImage ? "Changer la photo" : "Ajouter une photo"}
+                </Button>
+                {formData.profileImage && (
+                  <Button type="button" variant="ghost" size="sm" onClick={removePhoto}>
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                    Retirer
+                  </Button>
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Format JPG/PNG · la photo sera affichée sur le badge (46×46 mm)
+              </p>
+              {errors.profileImage && (
+                <p className="text-sm text-red-500">{errors.profileImage}</p>
+              )}
+            </div>
+            <input
+              ref={photoInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handlePhotoChange}
+            />
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">Prénom *</Label>

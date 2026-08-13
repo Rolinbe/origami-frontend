@@ -69,4 +69,5 @@ export interface EmployeeFormData {
   employeeType: "permanent" | "intern";
   contractStartDate: string;
   contractEndDate?: string;
+  profileImage?: string;
 }
