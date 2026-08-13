@@ -177,12 +177,12 @@ const AttendanceList = () => {
 
   const getStatusBadge = (row: AttendanceRow) => {
     if (row.scanType === "check_out") {
-      return <Badge className="bg-blue-500 text-blue-50">Sortie</Badge>;
+      return <Badge className="bg-primary/10 text-primary hover:bg-primary/10">Sortie</Badge>;
     }
     if (row.isLate) {
       return <Badge variant="destructive">En retard</Badge>;
     }
-    return <Badge className="bg-success text-success-foreground">Entrée</Badge>;
+    return <Badge className="bg-success/10 text-success hover:bg-success/10">Entrée</Badge>;
   };
 
   const handlePrevious = () => {
@@ -194,7 +194,7 @@ const AttendanceList = () => {
   };
 
   return (
-    <Card className="h-full flex flex-col transition-all duration-300 ease-in-out hover:scale-105 hover:bg-card/90 hover:shadow-xl cursor-pointer">
+    <Card className="h-full flex flex-col transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lift">
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>

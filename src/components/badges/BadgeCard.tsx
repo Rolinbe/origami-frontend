@@ -47,7 +47,7 @@ export const BadgeCard: React.FC<BadgeCardProps> = ({
                 className="w-16 h-16 rounded-full object-cover"
               />
             ) : (
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white text-xl font-bold">
+              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-purple-500 flex items-center justify-center text-white text-xl font-bold">
                 {badge.user?.firstName?.[0]}
                 {badge.user?.lastName?.[0]}
               </div>
@@ -138,7 +138,7 @@ export const BadgeCard: React.FC<BadgeCardProps> = ({
               ) : (
                 <Button
                   size="sm"
-                  className="bg-green-600 hover:bg-green-700 text-white"
+                  className="bg-success hover:bg-success/90 text-white"
                   onClick={() => onReactivate(badge)}
                   disabled={isSubmitting}
                 >

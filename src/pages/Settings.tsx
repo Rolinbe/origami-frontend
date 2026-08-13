@@ -3,7 +3,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAttendanceSettings } from "@/contexts/AttendanceSettingsContext";
+import { PageHeader } from "@/components/PageHeader";
 import { Sidebar } from "@/components/sidebar/Sidebar";
+import { Settings } from "lucide-react";
 
 const SettingsPage = () => {
   const { settings, updateSettings, resetSettings } = useAttendanceSettings();
@@ -30,18 +32,16 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-app flex">
       <Sidebar />
       <div className="flex-1 ml-64 overflow-auto h-screen">
         <main className="container mx-auto px-4 py-8">
           <div className="max-w-3xl space-y-6">
-            <div>
-              <h1 className="text-2xl font-semibold">Paramètres</h1>
-              <p className="text-muted-foreground">
-                Configurez les horaires de référence utilisés pour calculer les retards du matin et
-                de l’après-midi.
-              </p>
-            </div>
+            <PageHeader
+              icon={Settings}
+              title="Paramètres"
+              description="Configurez les horaires de référence utilisés pour calculer les retards du matin et de l'après-midi."
+            />
 
             <Card>
               <CardHeader>

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { LogOut } from "lucide-react";
+import { LogOut, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog,
@@ -31,24 +31,39 @@ export const Sidebar = () => {
   };
 
   return (
-    <aside className="w-64 bg-card border-r h-screen flex flex-col p-3 fixed left-0 top-0">
+    <aside className="w-64 fixed left-0 top-0 z-30 flex h-screen flex-col border-r border-sidebar-border bg-sidebar text-sidebar-foreground">
       {/* Header */}
-      <div className="mb-8 mt-4 flex-shrink-0 flex items-center justify-center w-full">
-        <img src={logo} alt="Origami Tech" className="max-h-16 w-48 object-contain" />
+      <div className="flex h-20 shrink-0 items-center justify-center border-b border-sidebar-border px-4">
+        <img
+          src={logo}
+          alt="Origami Tech"
+          className="max-h-14 w-full max-w-[11rem] object-contain"
+        />
       </div>
 
       {/* Navigation - Scrollable */}
-      <nav className="flex-1 space-y-4 overflow-y-auto pr-2 min-h-0">
+      <nav className="scrollbar-thin flex-1 space-y-1 overflow-y-auto px-3 py-5 min-h-0">
         {navigationItems.map((item, index) => (
           <NavGroup key={index} item={item} />
         ))}
       </nav>
 
       {/* Footer - Fixed at bottom */}
-      <div className="pt-4 border-t space-y-2 flex-shrink-0">
+      <div className="shrink-0 space-y-3 border-t border-sidebar-border p-3">
+        <div className="flex items-center gap-2.5 rounded-lg bg-muted/50 px-3 py-2.5">
+          <ShieldCheck className="h-4 w-4 text-primary" />
+          <p className="text-xs font-medium text-muted-foreground">
+            Origami Tech · Espace admin
+          </p>
+        </div>
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="outline" className="w-full" size="sm" disabled={isLoggingOut}>
+            <Button
+              variant="outline"
+              className="w-full"
+              size="sm"
+              disabled={isLoggingOut}
+            >
               <LogOut className="mr-2 h-4 w-4" />
               {isLoggingOut ? "Déconnexion..." : "Déconnexion"}
             </Button>
@@ -57,7 +72,8 @@ export const Sidebar = () => {
             <AlertDialogHeader>
               <AlertDialogTitle>Confirmer la déconnexion</AlertDialogTitle>
               <AlertDialogDescription>
-                Vous allez être déconnecté de votre session. Voulez-vous continuer&nbsp;?
+                Vous allez être déconnecté de votre session. Voulez-vous
+                continuer&nbsp;?
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

@@ -207,7 +207,7 @@ export const ServiceDialog = ({
           </Button>
           <Button
             onClick={handleSubmit}
-            className="bg-[rgb(101,193,255)] hover:bg-[rgb(81,173,235)] text-white"
+            className="bg-primary hover:bg-primary/90 text-primary-foreground"
             disabled={
               isLoading || !formData.name.trim() || !formData.code.trim()
             }

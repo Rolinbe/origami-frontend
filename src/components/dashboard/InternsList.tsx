@@ -93,7 +93,7 @@ const InternsList = () => {
   );
 
   return (
-    <Card className="transition-all duration-300 ease-in-out hover:scale-105 hover:bg-card/90 hover:shadow-xl cursor-pointer">
+    <Card className="transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lift">
       <CardHeader>
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -151,13 +151,15 @@ const InternsList = () => {
                   {intern.present ? (
                     <Badge
                       className={
-                        intern.isLate ? "bg-red-500 text-white" : "bg-green-500 text-white"
+                        intern.isLate
+                          ? "bg-destructive/10 text-destructive hover:bg-destructive/10"
+                          : "bg-success/10 text-success hover:bg-success/10"
                       }
                     >
                       {intern.isLate ? "En retard" : "Présent"}
                     </Badge>
                   ) : intern.checkOut ? (
-                    <Badge variant="outline" className="border-blue-500 text-blue-500">
+                    <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20">
                       Sorti
                     </Badge>
                   ) : (

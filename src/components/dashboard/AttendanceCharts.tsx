@@ -117,7 +117,7 @@ const AttendanceCharts = () => {
   const errorMessage = (errorWeekly as Error)?.message || (errorOverview as Error)?.message;
 
   return (
-    <Card className="col-span-2 transition-all duration-300 ease-in-out hover:scale-105 hover:bg-card/90 hover:shadow-xl cursor-pointer">
+    <Card className="col-span-2 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lift">
       <CardHeader>
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -162,7 +162,7 @@ const AttendanceCharts = () => {
                       <span className="text-xs w-8">{entry.label}</span>
                       <div className="flex-1 mx-2 bg-secondary h-3 rounded-full overflow-hidden">
                         <div
-                          className="bg-blue-500 h-3"
+                          className="bg-primary h-3"
                           style={{ width: `${entry.presentPercent}%` }}
                         />
                       </div>
@@ -181,7 +181,7 @@ const AttendanceCharts = () => {
                 </div>
               ) : (
                 <div className="flex items-center justify-center">
-                  <div className="relative w-32 h-32 rounded-full bg-gradient-to-br from-green-400 to-blue-500 flex items-center justify-center">
+                  <div className="relative w-32 h-32 rounded-full bg-gradient-to-br from-success to-primary flex items-center justify-center">
                     <div className="absolute inset-2 bg-card rounded-full flex items-center justify-center">
                       <span className="text-lg font-bold">{distribution.presentPercent}%</span>
                     </div>
@@ -190,11 +190,11 @@ const AttendanceCharts = () => {
               )}
               <div className="flex justify-center gap-4 text-xs">
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-green-500 rounded"></div>
+                  <div className="w-3 h-3 bg-success rounded"></div>
                   <span>Présents ({isLoading ? "—" : distribution.present})</span>
                 </div>
                 <div className="flex items-center gap-1">
-                  <div className="w-3 h-3 bg-red-500 rounded"></div>
+                  <div className="w-3 h-3 bg-destructive rounded"></div>
                   <span>Retards ({isLoading ? "—" : distribution.late})</span>
                 </div>
                 <div className="flex items-center gap-1">

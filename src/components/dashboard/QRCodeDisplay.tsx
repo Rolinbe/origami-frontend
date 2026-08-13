@@ -39,7 +39,7 @@ const QRCodeDisplay = () => {
   }, []); 
 
   return (
-    <Card className="transition-all duration-300 ease-in-out hover:scale-105 hover:bg-card/90 hover:shadow-xl cursor-pointer">
+    <Card className="transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lift">
       <CardHeader>
         <CardTitle>QR Code du Jour</CardTitle>
         <CardDescription>

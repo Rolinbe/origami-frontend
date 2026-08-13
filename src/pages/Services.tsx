@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/PageHeader";
 import { Sidebar } from "@/components/sidebar/Sidebar";
 import { ServiceStats } from "../components/services/ServiceStats";
 import { ServiceGrid } from "../components/services/ServiceGrid";
@@ -128,7 +129,7 @@ const Services = () => {
   const inactiveServices = services.filter((s) => !s.isActive);
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-app flex">
       <Sidebar />
 
       {/* Ajout de ml-64 et h-screen overflow-auto */}
@@ -136,24 +137,21 @@ const Services = () => {
         <main className="container mx-auto px-4 py-8">
           <div className="space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-foreground">
-                  Départements
-                </h1>
-                <p className="text-muted-foreground mt-1">
-                  Gérez les départements de votre entreprise
-                </p>
-              </div>
-              <Button
-                onClick={handleCreate}
-                className="bg-[rgb(101,193,255)] hover:bg-[rgb(81,173,235)] text-white"
-                disabled={isLoading}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Nouveau département
-              </Button>
-            </div>
+            <PageHeader
+              icon={Building2}
+              title="Départements"
+              description="Gérez les départements de votre entreprise"
+              actions={
+                <Button
+                  onClick={handleCreate}
+                  className="bg-primary hover:bg-primary/90"
+                  disabled={isLoading}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Nouveau département
+                </Button>
+              }
+            />
 
             {/* Stats */}
             <ServiceStats

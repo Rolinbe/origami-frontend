@@ -14,10 +14,10 @@ const ServicePresence = () => {
   const totalEmployees = mockServiceData.reduce((sum, service) => sum + service.total, 0);
 
   return (
-    <Card className="transition-all duration-300 ease-in-out hover:scale-105 hover:bg-card/90 hover:shadow-xl cursor-pointer">
+    <Card className="transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lift">
       <CardHeader className="pb-4">
         <div className="flex items-center gap-2">
-          <Users className="h-5 w-5 text-blue-500" />
+          <Users className="h-5 w-5 text-primary" />
           <CardTitle>Présents par service</CardTitle>
         </div>
         <CardDescription>
@@ -28,8 +28,8 @@ const ServicePresence = () => {
       <CardContent className="space-y-4">
         {mockServiceData.map((service, index) => {
           const percentage = Math.round((service.present / service.total) * 100);
-          const barColor = percentage >= 80 ? "bg-green-500" : 
-                          percentage >= 60 ? "bg-amber-500" : "bg-red-500";
+          const barColor = percentage >= 80 ? "bg-success" : 
+                          percentage >= 60 ? "bg-warning" : "bg-destructive";
           
           return (
             <div key={index} className="space-y-2">

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Users, UserCheck, UserX, UserPlus } from "lucide-react";
+import { Users, UserCheck, UserX, UserPlus, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { PageHeader } from "@/components/PageHeader";
 import { Sidebar } from "@/components/sidebar/Sidebar";
 import { toast } from "sonner";
 
@@ -243,30 +244,24 @@ const Employees: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-app flex">
       <Sidebar />
 
       <div className="flex-1 ml-64 overflow-auto h-screen">
         <main className="container mx-auto px-4 py-8">
           <div className="space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-foreground">
-                  Gestion des employés
-                </h1>
-                <p className="text-muted-foreground mt-1">
-                  Gérez et suivez tous vos employés
-                </p>
-              </div>
-              <Button
-                className="bg-primary hover:bg-primary/90"
-                onClick={handleCreateEmployee}
-              >
-                <UserPlus className="mr-2 h-4 w-4" />
-                Nouvel employé
-              </Button>
-            </div>
+            <PageHeader
+              icon={Building2}
+              title="Gestion des employés"
+              description="Gérez et suivez tous vos employés"
+              actions={
+                <Button className="bg-primary hover:bg-primary/90" onClick={handleCreateEmployee}>
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Nouvel employé
+                </Button>
+              }
+            />
 
             {/* Stats */}
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

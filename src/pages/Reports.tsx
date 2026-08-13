@@ -1,7 +1,9 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format, parse, parseISO, eachDayOfInterval, startOfDay, differenceInMinutes } from "date-fns";
+import { RefreshCw, FileBarChart2, CalendarX, Clock, Users, UserX } from "lucide-react";
 import { Sidebar } from "@/components/sidebar/Sidebar";
+import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -347,22 +349,22 @@ const Reports = () => {
   const isFetching = isFetchingEmployees || isFetchingScans;
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-app flex">
       <Sidebar />
 
       <div className="flex-1 ml-64 overflow-auto h-screen">
         <main className="container mx-auto px-4 py-8 space-y-6">
-          <div className="flex items-start justify-between gap-4 flex-wrap">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Rapports de pointage</h1>
-              <p className="text-muted-foreground">
-                Visualisez les employés absents ou en retard selon les horaires configurés.
-              </p>
-            </div>
-            <Button variant="outline" onClick={handleRefresh} disabled={isLoading || isFetching}>
-              Actualiser
-            </Button>
-          </div>
+          <PageHeader
+            icon={FileBarChart2}
+            title="Rapports de pointage"
+            description="Visualisez les employés absents ou en retard selon les horaires configurés."
+            actions={
+              <Button variant="outline" onClick={handleRefresh} disabled={isLoading || isFetching}>
+                <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+                Actualiser
+              </Button>
+            }
+          />
 
           <Card>
             <CardHeader>
@@ -425,40 +427,52 @@ const Reports = () => {
           </Card>
 
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Total d&apos;absences</CardTitle>
-                <CardDescription>Selon les filtres actifs</CardDescription>
+            <Card className="transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total d&apos;absences</CardTitle>
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-destructive/10">
+                  <CalendarX className="h-5 w-5 text-destructive" />
+                </div>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold">{isLoading ? "—" : absenceCount}</p>
+                <p className="text-3xl font-bold tracking-tight">{isLoading ? "—" : absenceCount}</p>
+                <CardDescription className="mt-1">Selon les filtres actifs</CardDescription>
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Total de retards</CardTitle>
-                <CardDescription>Entrées après +{LATE_THRESHOLD_MINUTES} min</CardDescription>
+            <Card className="transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Total de retards</CardTitle>
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-warning/10">
+                  <Clock className="h-5 w-5 text-warning" />
+                </div>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold">{isLoading ? "—" : lateCount}</p>
+                <p className="text-3xl font-bold tracking-tight">{isLoading ? "—" : lateCount}</p>
+                <CardDescription className="mt-1">Entrées après +{LATE_THRESHOLD_MINUTES} min</CardDescription>
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Employés absents</CardTitle>
-                <CardDescription>Nombre unique</CardDescription>
+            <Card className="transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Employés absents</CardTitle>
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
+                  <UserX className="h-5 w-5 text-primary" />
+                </div>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold">{isLoading ? "—" : uniqueAbsentEmployees}</p>
+                <p className="text-3xl font-bold tracking-tight">{isLoading ? "—" : uniqueAbsentEmployees}</p>
+                <CardDescription className="mt-1">Nombre unique</CardDescription>
               </CardContent>
             </Card>
-            <Card>
-              <CardHeader>
-                <CardTitle>Employés retardataires</CardTitle>
-                <CardDescription>Nombre unique</CardDescription>
+            <Card className="transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground">Employés retardataires</CardTitle>
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-success/10">
+                  <Users className="h-5 w-5 text-success" />
+                </div>
               </CardHeader>
               <CardContent>
-                <p className="text-3xl font-bold">{isLoading ? "—" : uniqueLateEmployees}</p>
+                <p className="text-3xl font-bold tracking-tight">{isLoading ? "—" : uniqueLateEmployees}</p>
+                <CardDescription className="mt-1">Nombre unique</CardDescription>
               </CardContent>
             </Card>
           </div>

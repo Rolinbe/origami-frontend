@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
-import { Plus } from "lucide-react";
+import { Plus, BadgeCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { PageHeader } from "@/components/PageHeader";
 import { Sidebar } from "@/components/sidebar/Sidebar";
 import { toast } from "sonner";
 import { BadgeStats } from "@/components/badges/BadgeStats";
@@ -189,28 +190,25 @@ const BadgeManagement: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex min-h-screen bg-app">
       <Sidebar />
       <div className="flex-1 ml-64 px-4 py-8 overflow-x-hidden">
         <div className="space-y-6">
           {/* Header */}
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">
-                Gestion des Badges
-              </h1>
-              <p className="text-muted-foreground mt-1">
-                Gérez les badges d'identification des employés
-              </p>
-            </div>
-            <Button
-              onClick={() => setShowCreateModal(true)}
-              className="bg-[rgb(101,193,255)] hover:bg-[rgb(81,173,235)] text-white"
-            >
-              <Plus className="mr-2 h-4 w-4" />
-              Nouveau badge
-            </Button>
-          </div>
+          <PageHeader
+            icon={BadgeCheck}
+            title="Gestion des Badges"
+            description="Gérez les badges d'identification des employés"
+            actions={
+              <Button
+                onClick={() => setShowCreateModal(true)}
+                className="bg-primary hover:bg-primary/90"
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Nouveau badge
+              </Button>
+            }
+          />
 
           {/* Stats */}
           <BadgeStats stats={stats} />

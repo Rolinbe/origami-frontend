@@ -150,7 +150,7 @@ export const CreateBadgeModal: React.FC<CreateBadgeModalProps> = ({
                 <Button
                   onClick={handleSubmit}
                   disabled={!selectedUser || isSubmitting}
-                  className="flex-1 bg-[rgb(101,193,255)] hover:bg-[rgb(81,173,235)] text-white disabled:opacity-50"
+                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50"
                 >
                   {isSubmitting ? "Création..." : "Créer le badge"}
                 </Button>

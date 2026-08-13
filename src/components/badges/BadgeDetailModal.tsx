@@ -166,7 +166,7 @@ export const BadgeDetailModal: React.FC<BadgeDetailModalProps> = ({
           {/* Actions */}
           <div className="flex gap-2 pt-4 border-t">
             <Button
-              className="flex-1 bg-[rgb(101,193,255)] hover:bg-[rgb(81,173,235)] text-white"
+              className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
               onClick={handleDownload}
             >
               <Download className="h-4 w-4 mr-2" />

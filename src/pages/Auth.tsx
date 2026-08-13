@@ -1,9 +1,21 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+} from "@/components/ui/card";
 import { useState, useEffect } from "react";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import {
+  Eye,
+  EyeOff,
+  Loader2,
+  Clock,
+  Fingerprint,
+  UserRound,
+  ShieldCheck,
+} from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
@@ -24,13 +36,13 @@ const Auth = () => {
       navigate("/dashboard");
     }
   }, [isAuthenticated, navigate]);
-  
+
   // Images de démonstration - remplacez par vos vraies images
   const images = [
     "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&h=1000&fit=crop",
     "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=800&h=1000&fit=crop",
     "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800&h=1000&fit=crop",
-    "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&h=1000&fit=crop"
+    "https://images.unsplash.com/photo-1553877522-43269d4ea984?w=800&h=1000&fit=crop",
   ];
 
   useEffect(() => {
@@ -64,10 +76,16 @@ const Auth = () => {
     }
   };
 
+  const features = [
+    { icon: Fingerprint, label: "Pointage par badge" },
+    { icon: Clock, label: "Suivi des présences" },
+    { icon: UserRound, label: "Gestion des équipes" },
+  ];
+
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex bg-app">
       {/* Section gauche - Carrousel d'images */}
-      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gray-900">
+      <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-slate-950">
         {images.map((img, index) => (
           <div
             key={index}
@@ -80,60 +98,91 @@ const Auth = () => {
               alt={`Slide ${index + 1}`}
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-br from-black/40 to-black/20" />
           </div>
         ))}
-        
+        {/* Overlay gradient */}
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/70 via-slate-950/60 to-slate-950/80" />
+
+        {/* Contenu de marque */}
+        <div className="relative z-10 flex w-full flex-col justify-between p-12">
+          <div className="flex items-center gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/10 backdrop-blur-md ring-1 ring-white/20">
+              <ShieldCheck className="h-6 w-6 text-white" />
+            </div>
+            <div>
+              <p className="text-lg font-semibold text-white">Origami Tech</p>
+              <p className="text-xs font-medium uppercase tracking-widest text-white/60">
+                Gestion des pointages
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-8">
+            <h2 className="text-4xl font-bold leading-tight text-white">
+              Simplifiez la gestion des
+              <span className="block text-primary-foreground/90">présences de votre entreprise</span>
+            </h2>
+            <p className="max-w-md text-base leading-relaxed text-white/70">
+              Un système intuitif et moderne pour suivre les pointages, gérer
+              les employés et générer des rapports en temps réel.
+            </p>
+
+            <div className="flex flex-wrap gap-3">
+              {features.map(({ icon: Icon, label }) => (
+                <div
+                  key={label}
+                  className="flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-medium text-white backdrop-blur-md ring-1 ring-white/15"
+                >
+                  <Icon className="h-4 w-4" />
+                  {label}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* Indicateurs de pagination */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex gap-2 z-10">
+        <div className="absolute bottom-8 left-1/2 z-10 flex -translate-x-1/2 gap-2">
           {images.map((_, index) => (
             <button
               key={index}
               onClick={() => setCurrentImage(index)}
               className={`h-1.5 rounded-full transition-all ${
-                index === currentImage 
-                  ? "w-8 bg-white" 
-                  : "w-1.5 bg-white/50 hover:bg-white/75"
+                index === currentImage
+                  ? "w-8 bg-white"
+                  : "w-1.5 bg-white/40 hover:bg-white/70"
               }`}
               aria-label={`Aller à l'image ${index + 1}`}
             />
           ))}
         </div>
-
-        {/* Citation ou texte d'accompagnement */}
-        {/* <div className="absolute bottom-20 left-8 right-8 z-10">
-          <p className="text-white text-lg font-light leading-relaxed">
-            "Simplifiez la gestion des présences de votre entreprise avec notre système intuitif et moderne"
-          </p>
-        </div> */}
       </div>
 
       {/* Section droite - Formulaire */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white">
-        <div className="w-full max-w-md space-y-8">
+      <div className="flex w-full items-center justify-center p-6 lg:w-1/2 lg:p-8">
+        <div className="w-full max-w-md space-y-8 animate-fade-in-up">
           {/* Logo et titre */}
           <div className="flex flex-col items-center text-center">
-            <div className="w-64 h-32 flex items-center justify-center">
-              <img 
-                src={Icons.logo} 
-                className="w-full h-24 object-contain" 
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/20">
+              <img
+                src={Icons.logo}
+                className="h-12 w-12 object-contain"
                 alt="Logo Origami Tech"
               />
             </div>
-            <h1 className="text-2xl font-semibold text-gray-900">Système de gestion Origami Tech</h1>
+            <h1 className="mt-5 text-2xl font-bold text-foreground">
+              Bienvenue chez Origami Tech
+            </h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Connectez-vous pour accéder à votre espace
+            </p>
           </div>
 
           {/* Formulaire */}
-          <Card className="border-0 shadow-none">
-            {/* <CardHeader className="px-0 pt-0">
-              <CardTitle className="text-2xl font-semibold">Connexion</CardTitle>
-              <CardDescription>
-                Connectez-vous pour accéder à votre espace
-              </CardDescription>
-            </CardHeader> */}
-            <CardContent className="space-y-4 px-0">
+          <Card className="border-0 bg-card/80 shadow-soft backdrop-blur-sm">
+            <CardContent className="space-y-5 px-6 py-8">
               <div className="space-y-2">
-                <Label htmlFor="email" className="text-sm font-medium text-gray-700">
+                <Label htmlFor="email" className="text-sm font-medium text-foreground">
                   Adresse email
                 </Label>
                 <Input
@@ -143,7 +192,7 @@ const Auth = () => {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   disabled={loading}
-                  className="h-11 border-gray-300 focus:border-gray-900 focus:ring-gray-900"
+                  className="h-11 focus-visible:ring-primary focus-visible:ring-offset-0"
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !loading) {
                       handleLogin();
@@ -153,12 +202,15 @@ const Auth = () => {
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+                  <Label
+                    htmlFor="password"
+                    className="text-sm font-medium text-foreground"
+                  >
                     Mot de passe
                   </Label>
-                  <button 
+                  <button
                     type="button"
-                    className="text-xs text-gray-600 hover:text-gray-900 font-medium"
+                    className="text-xs font-medium text-muted-foreground transition-colors hover:text-primary"
                   >
                     Mot de passe oublié ?
                   </button>
@@ -170,7 +222,7 @@ const Auth = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     disabled={loading}
-                    className="h-11 border-gray-300 focus:border-gray-900 focus:ring-gray-900 pr-11"
+                    className="h-11 pr-11 focus-visible:ring-primary focus-visible:ring-offset-0"
                     onKeyDown={(e) => {
                       if (e.key === "Enter" && !loading) {
                         handleLogin();
@@ -181,7 +233,7 @@ const Auth = () => {
                     type="button"
                     onClick={() => setShowPassword((prev) => !prev)}
                     disabled={loading}
-                    className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-900"
+                    className="absolute inset-y-0 right-3 flex items-center text-muted-foreground transition-colors hover:text-foreground"
                     aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
                   >
                     {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -189,12 +241,12 @@ const Auth = () => {
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="px-0 pt-2 flex-col gap-4">
-              <Button 
+            <CardFooter className="flex-col gap-4 px-6 pb-8 pt-0">
+              <Button
                 onClick={handleLogin}
                 disabled={loading || !email || !password}
-                className="w-full h-11 bg-gray-900 hover:bg-gray-800 text-white font-medium disabled:opacity-50 disabled:cursor-not-allowed" 
-              > 
+                className="h-11 w-full bg-primary text-primary-foreground font-medium transition-all hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
                 {loading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -204,7 +256,7 @@ const Auth = () => {
                   "Se connecter"
                 )}
               </Button>
-              <p className="text-xs text-center text-gray-500">
+              <p className="text-center text-xs text-muted-foreground">
                 En vous connectant, vous acceptez nos conditions d'utilisation
               </p>
             </CardFooter>

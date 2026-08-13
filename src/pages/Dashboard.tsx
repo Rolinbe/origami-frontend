@@ -1,6 +1,7 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Users, UserCheck, UserX, Clock } from "lucide-react";
+import { Users, UserCheck, UserX, Clock, LayoutDashboard } from "lucide-react";
+import { PageHeader } from "@/components/PageHeader";
 import StatsCard from "@/components/dashboard/StatsCard";
 import AttendanceList from "@/components/dashboard/AttendanceList";
 import ServicePresence from "@/components/dashboard/ServicePresence";
@@ -29,7 +30,6 @@ const Dashboard = () => {
     isLoading,
     isError,
     error,
-    refetch,
   } = useQuery({
     queryKey: ["dashboard-overview-stats"],
     queryFn: fetchDashboardStats,
@@ -47,24 +47,17 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="min-h-screen bg-background flex">
+    <div className="min-h-screen bg-app flex">
       <Sidebar />
 
       <div className="flex-1 ml-64 overflow-auto h-screen">
         <main className="container mx-auto px-4 py-8">
-          <div className="mb-4 flex items-start justify-between gap-4 flex-wrap">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">Tableau de bord principal</h1>
-              <p className="text-muted-foreground">Vue d&apos;ensemble en temps réel de la présence</p>
-            </div>
-            {/* <button
-              onClick={() => refetch()}
-              className="text-sm text-primary underline"
-              disabled={isLoading}
-            >
-              Actualiser les statistiques
-            </button> */}
-          </div>
+          <PageHeader
+            icon={LayoutDashboard}
+            title="Tableau de bord principal"
+            description="Vue d'ensemble en temps réel de la présence"
+            className="mb-6"
+          />
 
           <div className="space-y-8">
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">

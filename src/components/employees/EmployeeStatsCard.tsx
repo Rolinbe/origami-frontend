@@ -1,5 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LucideIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 type Variant = "default" | "success" | "warning" | "destructive";
 
@@ -11,37 +12,39 @@ interface EmployeeStatsCardProps {
   description?: string;
 }
 
-export const EmployeeStatsCard: React.FC<EmployeeStatsCardProps> = ({ 
-  title, 
-  value, 
-  icon: Icon, 
-  variant = "default", 
-  description 
-}) => {
-  const variants: Record<Variant, string> = {
-    default: "bg-card border-border",
-    success: "bg-success/10 border-success/20",
-    warning: "bg-warning/10 border-warning/20",
-    destructive: "bg-destructive/10 border-destructive/20"
-  };
+const styles: Record<Variant, { iconBg: string; iconColor: string }> = {
+  default: { iconBg: "bg-primary/10", iconColor: "text-primary" },
+  success: { iconBg: "bg-success/10", iconColor: "text-success" },
+  warning: { iconBg: "bg-warning/10", iconColor: "text-warning" },
+  destructive: { iconBg: "bg-destructive/10", iconColor: "text-destructive" },
+};
 
-  const iconVariants: Record<Variant, string> = {
-    default: "text-primary",
-    success: "text-success",
-    warning: "text-warning",
-    destructive: "text-destructive"
-  };
+export const EmployeeStatsCard: React.FC<EmployeeStatsCardProps> = ({
+  title,
+  value,
+  icon: Icon,
+  variant = "default",
+  description,
+}) => {
+  const { iconBg, iconColor } = styles[variant];
 
   return (
-    <Card className={`${variants[variant]} border`}>
+    <Card className="group transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lift">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className={`h-4 w-4 ${iconVariants[variant]}`} />
+        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+        <div
+          className={cn(
+            "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg transition-transform duration-300 group-hover:scale-110",
+            iconBg
+          )}
+        >
+          <Icon className={cn("h-5 w-5", iconColor)} />
+        </div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="text-2xl font-bold tracking-tight">{value}</div>
         {description && (
-          <p className="text-xs text-muted-foreground mt-1">{description}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{description}</p>
         )}
       </CardContent>
     </Card>
