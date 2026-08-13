@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Html5Qrcode } from "html5-qrcode";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import jsQR from "jsqr";
 import { ScanBarcode, Camera, Keyboard, CheckCircle2, XCircle } from "lucide-react";
 import { Sidebar } from "@/components/sidebar/Sidebar";
 import { PageHeader } from "@/components/PageHeader";
@@ -8,7 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import apiService from "@/services/api.service";
 
-const SCAN_READER_ID = "scan-qr-reader";
+const stopStream = (stream: MediaStream | null) => {
+  if (stream) {
+    stream.getTracks().forEach((track) => track.stop());
+  }
+};
 
 type ScanResult = {
   success: boolean;
@@ -65,7 +69,13 @@ const Scan = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [result, setResult] = useState<ScanResult | null>(null);
   const [lastResult, setLastResult] = useState<string | null>(null);
-  const scannerRef = useRef<Html5Qrcode | null>(null);
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const scanLoopRef = useRef(false);
+  const rafRef = useRef<number | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
+  const decodingRef = useRef(false);
 
   const handleScanPayload = useCallback(
     async (qrCodeData: string) => {
@@ -120,47 +130,94 @@ const Scan = () => {
     [isProcessing, lastResult, scanType],
   );
 
+  const scanFrame = useCallback(() => {
+    const video = videoRef.current;
+    if (!scanLoopRef.current || !video) return;
+    if (video.readyState < 2) {
+      rafRef.current = requestAnimationFrame(scanFrame);
+      return;
+    }
+    if (!canvasRef.current) {
+      canvasRef.current = document.createElement("canvas");
+    }
+    const canvas = canvasRef.current;
+    if (!ctxRef.current) {
+      ctxRef.current = canvas.getContext("2d", { willReadFrequently: true });
+    }
+    const ctx = ctxRef.current;
+    if (!ctx) {
+      rafRef.current = requestAnimationFrame(scanFrame);
+      return;
+    }
+    const width = video.videoWidth || 320;
+    const height = video.videoHeight || 240;
+    if (canvas.width !== width) canvas.width = width;
+    if (canvas.height !== height) canvas.height = height;
+    ctx.drawImage(video, 0, 0, width, height);
+    if (!decodingRef.current) {
+      decodingRef.current = true;
+      try {
+        const imageData = ctx.getImageData(0, 0, width, height);
+        const code = jsQR(imageData.data, imageData.width, imageData.height, {
+          inversionAttempts: "dontInvert",
+        });
+        if (code?.data) {
+          handleScanPayload(code.data);
+        }
+      } catch {
+        // erreur de décodage ignorée (l'image est peut-être en cours de changement)
+      } finally {
+        decodingRef.current = false;
+      }
+    }
+    rafRef.current = requestAnimationFrame(scanFrame);
+  }, [handleScanPayload]);
+
   const startCamera = useCallback(async () => {
     setCameraError(null);
     setResult(null);
     try {
-      const scanner = new Html5Qrcode(SCAN_READER_ID);
-      scannerRef.current = scanner;
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: "environment" } },
+        audio: false,
+      });
+      streamRef.current = stream;
+      const video = videoRef.current;
+      if (!video) {
+        stopStream(stream);
+        throw new Error("Aucun élément vidéo");
+      }
+      video.srcObject = stream;
+      await video.play();
       setScanning(true);
-      await scanner.start(
-        { facingMode: "environment" },
-        { fps: 10, qrbox: { width: 250, height: 250 } },
-        (decodedText) => {
-          handleScanPayload(decodedText);
-        },
-        () => undefined,
-      );
+      scanLoopRef.current = true;
+      rafRef.current = requestAnimationFrame(scanFrame);
     } catch (error) {
+      stopStream(streamRef.current);
+      streamRef.current = null;
       setScanning(false);
       setCameraError(
         "Impossible d'accéder à la caméra. Vérifiez les permissions ou utilisez la saisie manuelle.",
       );
     }
-  }, [handleScanPayload]);
+  }, [scanFrame]);
 
-  const stopCamera = useCallback(async () => {
-    setScanning(false);
-    if (scannerRef.current) {
-      try {
-        await scannerRef.current.stop();
-      } catch {
-        // ignore
-      }
-      try {
-        scannerRef.current.clear();
-      } catch {
-        // ignore
-      }
-      scannerRef.current = null;
+  const stopCamera = useCallback(() => {
+    scanLoopRef.current = false;
+    if (rafRef.current !== null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
     }
+    const video = videoRef.current;
+    if (video) {
+      video.srcObject = null;
+    }
+    stopStream(streamRef.current);
+    streamRef.current = null;
+    setScanning(false);
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     return () => {
       stopCamera();
     };
@@ -225,21 +282,20 @@ const Scan = () => {
                 </div>
 
                 <div className="flex flex-wrap gap-3">
-                  {!scanning ? (
-                    <Button onClick={startCamera}>
-                      <Camera className="mr-2 h-4 w-4" />
-                      Activer la caméra
-                    </Button>
-                  ) : (
-                    <Button variant="outline" onClick={stopCamera}>
-                      Désactiver la caméra
-                    </Button>
-                  )}
+                  <Button
+                    variant={scanning ? "outline" : "default"}
+                    onClick={scanning ? stopCamera : startCamera}
+                  >
+                    <Camera className="mr-2 h-4 w-4" />
+                    {scanning ? "Désactiver la caméra" : "Activer la caméra"}
+                  </Button>
                 </div>
 
-                <div
-                  id={SCAN_READER_ID}
-                  className={`rounded-lg overflow-hidden bg-muted ${scanning ? "" : "hidden"}`}
+                <video
+                  ref={videoRef}
+                  muted
+                  playsInline
+                  className={`rounded-lg overflow-hidden bg-muted w-full ${scanning ? "" : "hidden"}`}
                 />
 
                 {cameraError && (
