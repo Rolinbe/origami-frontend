@@ -55,9 +55,10 @@ const AttendanceCharts = () => {
     refetch: refetchOverview,
     isFetching: isFetchingOverview,
   } = useQuery({
-    queryKey: ["dashboard-overview-stats"],
+    queryKey: ["dashboard-overview"],
     queryFn: fetchOverview,
     refetchInterval: 60_000,
+    refetchOnMount: "always",
   });
 
   const weeklyBars = useMemo(() => {

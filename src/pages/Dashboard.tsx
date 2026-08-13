@@ -1,6 +1,12 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Users, UserCheck, UserX, Clock, LayoutDashboard } from "lucide-react";
+import {
+  Users,
+  UserCheck,
+  UserX,
+  Clock,
+  LayoutDashboard,
+} from "lucide-react";
 import { PageHeader } from "@/components/PageHeader";
 import StatsCard from "@/components/dashboard/StatsCard";
 import AttendanceList from "@/components/dashboard/AttendanceList";
@@ -8,15 +14,21 @@ import ServicePresence from "@/components/dashboard/ServicePresence";
 import AbsentList from "@/components/dashboard/AbsentList";
 import LateEmployees from "@/components/dashboard/LateEmployees";
 import InternsList from "@/components/dashboard/InternsList";
+import PresentEmployees from "@/components/dashboard/PresentEmployees";
+import LiveActivityFeed from "@/components/dashboard/LiveActivityFeed";
 import AttendanceCharts from "@/components/dashboard/AttendanceCharts";
 import { Sidebar } from "@/components/sidebar/Sidebar";
 import apiService from "@/services/api.service";
 
 interface DashboardStatsResponse {
   totalEmployees: number;
+  permanentEmployees: number;
+  activeInterns: number;
+  pendingEmployees: number;
   presentToday: number;
   lateToday: number;
   absentToday: number;
+  attendanceRate: number;
 }
 
 const fetchDashboardStats = async (): Promise<DashboardStatsResponse> => {
@@ -31,17 +43,22 @@ const Dashboard = () => {
     isError,
     error,
   } = useQuery({
-    queryKey: ["dashboard-overview-stats"],
+    queryKey: ["dashboard-overview"],
     queryFn: fetchDashboardStats,
     refetchInterval: 60_000,
+    refetchOnMount: "always",
   });
 
   const stats = useMemo(
     () => ({
       total: data?.totalEmployees ?? 0,
+      permanent: data?.permanentEmployees ?? 0,
+      interns: data?.activeInterns ?? 0,
+      pending: data?.pendingEmployees ?? 0,
       present: data?.presentToday ?? 0,
       late: data?.lateToday ?? 0,
       absent: data?.absentToday ?? Math.max((data?.totalEmployees ?? 0) - (data?.presentToday ?? 0), 0),
+      attendanceRate: data?.attendanceRate ?? 0,
     }),
     [data],
   );
@@ -94,6 +111,8 @@ const Dashboard = () => {
               />
             </div>
 
+            <LiveActivityFeed />
+
             <div className="grid gap-6 lg:grid-cols-3">
               <div className="lg:col-span-2">
                 <AttendanceList />
@@ -112,7 +131,8 @@ const Dashboard = () => {
               </div>
             </div>
 
-            <div className="grid gap-6 lg:grid-cols-2">
+            <div className="grid gap-6 lg:grid-cols-3">
+              <PresentEmployees />
               <LateEmployees />
               <AbsentList />
             </div>

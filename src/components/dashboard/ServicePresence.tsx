@@ -35,7 +35,7 @@ const ServicePresence = () => {
     refetch,
     isFetching,
   } = useQuery({
-    queryKey: ["dashboard-overview-stats"],
+    queryKey: ["dashboard-service-presence-stats"],
     queryFn: fetchServiceStats,
     refetchInterval: 60_000,
   });
