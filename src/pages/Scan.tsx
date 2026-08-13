@@ -291,12 +291,49 @@ const Scan = () => {
                   </Button>
                 </div>
 
-                <video
-                  ref={videoRef}
-                  muted
-                  playsInline
-                  className={`rounded-lg overflow-hidden bg-muted w-full ${scanning ? "" : "hidden"}`}
-                />
+                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-slate-950">
+                  <video
+                    ref={videoRef}
+                    muted
+                    playsInline
+                    className={`absolute inset-0 h-full w-full object-cover ${scanning ? "" : "opacity-0"}`}
+                  />
+
+                  {!scanning && (
+                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-400">
+                      <Camera className="h-10 w-10 opacity-40" />
+                      <p className="text-sm font-medium">La caméra est éteinte</p>
+                    </div>
+                  )}
+
+                  {scanning && (
+                    <div className="pointer-events-none absolute inset-0">
+                      <div
+                        className="absolute left-1/2 top-1/2 h-52 w-52 -translate-x-1/2 -translate-y-1/2 sm:h-60 sm:w-60"
+                        style={{ boxShadow: "0 0 0 9999px rgba(0,0,0,0.45)" }}
+                      >
+                        <span className="absolute -left-1 -top-1 h-9 w-9 rounded-tl-lg border-l-4 border-t-4 border-emerald-400" />
+                        <span className="absolute -right-1 -top-1 h-9 w-9 rounded-tr-lg border-r-4 border-t-4 border-emerald-400" />
+                        <span className="absolute -bottom-1 -left-1 h-9 w-9 rounded-bl-lg border-b-4 border-l-4 border-emerald-400" />
+                        <span className="absolute -bottom-1 -right-1 h-9 w-9 rounded-br-lg border-b-4 border-r-4 border-emerald-400" />
+                        <div
+                          className="scan-line absolute left-1 right-1 h-0.5 rounded-full bg-gradient-to-r from-transparent via-emerald-400 to-transparent"
+                          style={{ boxShadow: "0 0 14px 2px rgba(52,211,153,0.7)" }}
+                        />
+                      </div>
+
+                      <div className="absolute bottom-3 left-0 right-0 flex justify-center">
+                        <span className="inline-flex items-center gap-2 rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-emerald-300 backdrop-blur">
+                          <span className="relative flex h-2 w-2">
+                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                          </span>
+                          Scannez le badge QR dans le cadre
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
 
                 {cameraError && (
                   <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">

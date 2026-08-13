@@ -158,3 +158,33 @@ All colors MUST be HSL.
       );
   }
 }
+
+/* Scanner : ligne de balayage animée */
+@keyframes scan-sweep {
+  0% {
+    top: 4%;
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  45% {
+    top: 90%;
+    opacity: 1;
+  }
+  55% {
+    top: 90%;
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    top: 4%;
+    opacity: 0;
+  }
+}
+
+.scan-line {
+  animation: scan-sweep 2.4s ease-in-out infinite;
+}
