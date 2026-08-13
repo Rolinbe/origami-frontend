@@ -26,7 +26,23 @@ class ApiService {
     );
 
     // Intercepteur pour gérer les erreurs
-    this.api.interceptors.response.use((response) => response, handleApiError);
+    this.api.interceptors.response.use(
+      (response) => response,
+      async (error) => {
+        const config = error?.config;
+        if (!config || error?.response) {
+          return handleApiError(error);
+        }
+
+        // Erreur réseau / aucune réponse : nouvelle tentative avant d'échouer
+        config.__retryCount = (config.__retryCount ?? 0) + 1;
+        if (config.__retryCount <= 3) {
+          await new Promise((resolve) => setTimeout(resolve, 400 * config.__retryCount));
+          return this.api.request(config);
+        }
+        return handleApiError(error);
+      }
+    );
   }
 
   // Méthodes génériques pour les requêtes HTTP
