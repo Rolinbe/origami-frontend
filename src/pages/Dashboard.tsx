@@ -99,7 +99,7 @@ const Dashboard = () => {
                 <AttendanceList />
               </div>
               <div className="lg:col-span-1">
-                <InternsList />
+                <ServicePresence />
               </div>
             </div>
 
@@ -108,8 +108,13 @@ const Dashboard = () => {
                 <AttendanceCharts />
               </div>
               <div className="lg:col-span-1">
-                <AbsentList />
+                <InternsList />
               </div>
+            </div>
+
+            <div className="grid gap-6 lg:grid-cols-2">
+              <LateEmployees />
+              <AbsentList />
             </div>
           </div>
         </main>
