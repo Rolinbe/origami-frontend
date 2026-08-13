@@ -10,23 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
-import { cn } from "@/lib/utils";
 import { Employee, Service, EmployeeFormData } from "@/types/employee.types";
 
 interface EmployeeDialogProps {
@@ -230,24 +214,25 @@ export const EmployeeDialog = ({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="serviceId">Département</Label>
-              <Select
+              <select
+                id="serviceId"
+                name="serviceId"
                 value={formData.serviceId}
-                onValueChange={(value) =>
-                  handleSelectChange("serviceId", value)
-                }
+                onChange={(e) => handleSelectChange("serviceId", e.target.value)}
                 disabled={isLoading}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner un département" />
-                </SelectTrigger>
-                <SelectContent>
-                  {services.map((service) => (
-                    <SelectItem key={service.id} value={service.id}>
-                      {service.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <option value="">
+                  {services.length === 0
+                    ? "Aucun département disponible"
+                    : "Sélectionner un département"}
+                </option>
+                {services.map((service) => (
+                  <option key={service.id} value={service.id}>
+                    {service.name}
+                  </option>
+                ))}
+              </select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="department">Service (Détail)</Label>
@@ -264,22 +249,23 @@ export const EmployeeDialog = ({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Type de contrat</Label>
-              <Select
+              <Label htmlFor="employeeType">Type de contrat</Label>
+              <select
+                id="employeeType"
+                name="employeeType"
                 value={formData.employeeType}
-                onValueChange={(value: "permanent" | "intern") =>
-                  handleSelectChange("employeeType", value)
+                onChange={(e) =>
+                  handleSelectChange(
+                    "employeeType",
+                    e.target.value as "permanent" | "intern"
+                  )
                 }
                 disabled={isLoading}
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="permanent">Permanent</SelectItem>
-                  <SelectItem value="intern">Stagiaire</SelectItem>
-                </SelectContent>
-              </Select>
+                <option value="permanent">Permanent</option>
+                <option value="intern">Stagiaire</option>
+              </select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="contractStartDate">Date de début *</Label>

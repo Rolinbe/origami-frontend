@@ -1,14 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { Badge } from "@/components/ui/badge";
 import { UserWithoutBadge } from "@/types/badge.types";
 import badgeService from "@/services/badge.service";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -54,12 +46,6 @@ export const CreateBadgeModal: React.FC<CreateBadgeModalProps> = ({
     if (selectedUser) {
       onSubmit(selectedUser);
     }
-  };
-
-  const getTypeColor = (type: string): string => {
-    return type === "intern"
-      ? "bg-blue-100 text-blue-800"
-      : "bg-purple-100 text-purple-800";
   };
 
   const getTypeLabel = (type: string): string => {
@@ -109,35 +95,21 @@ export const CreateBadgeModal: React.FC<CreateBadgeModalProps> = ({
                 <label className="text-sm font-medium mb-2 block">
                   Sélectionner un employé
                 </label>
-                <Select value={selectedUser} onValueChange={setSelectedUser}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Choisir un employé..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {users.map((user) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        <div className="flex items-center gap-2">
-                          <span>
-                            {user.firstName} {user.lastName}
-                          </span>
-                          {user.service && (
-                            <Badge
-                              style={{
-                                backgroundColor: user.service.color,
-                              }}
-                              className="text-white text-xs"
-                            >
-                              {user.service.code}
-                            </Badge>
-                          )}
-                          <Badge className={getTypeColor(user.employeeType)}>
-                            {getTypeLabel(user.employeeType)}
-                          </Badge>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <select
+                  value={selectedUser}
+                  onChange={(e) => setSelectedUser(e.target.value)}
+                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <option value="">Choisir un employé...</option>
+                  {users.map((user) => (
+                    <option key={user.id} value={user.id}>
+                      {user.firstName} {user.lastName}
+                      {user.service ? ` (${user.service.code})` : ""}
+                      {" - "}
+                      {getTypeLabel(user.employeeType)}
+                    </option>
+                  ))}
+                </select>
                 <p className="text-xs text-gray-500 mt-1">
                   Seuls les employés sans badge actif sont affichés
                 </p>

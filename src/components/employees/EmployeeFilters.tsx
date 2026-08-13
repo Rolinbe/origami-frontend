@@ -1,7 +1,6 @@
 import { Search, Filter } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Service } from "@/data/mockData";
 
 export interface EmployeeFilters {
@@ -16,6 +15,9 @@ interface EmployeeFiltersProps {
   onFilterChange: (filters: EmployeeFilters) => void;
   services: Service[];
 }
+
+const selectClass =
+  "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 
 export const EmployeeFiltersComponent: React.FC<EmployeeFiltersProps> = ({ 
   filters, 
@@ -44,43 +46,40 @@ export const EmployeeFiltersComponent: React.FC<EmployeeFiltersProps> = ({
           </div>
 
           {/* Statut */}
-          <Select value={filters.status} onValueChange={(value: 'all' | 'active' | 'inactive') => onFilterChange({ ...filters, status: value })}>
-            <SelectTrigger>
-              <SelectValue placeholder="Statut" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tous les statuts</SelectItem>
-              <SelectItem value="active">Actifs</SelectItem>
-              <SelectItem value="inactive">Inactifs</SelectItem>
-            </SelectContent>
-          </Select>
+          <select
+            value={filters.status}
+            onChange={(e) => onFilterChange({ ...filters, status: e.target.value as 'all' | 'active' | 'inactive' })}
+            className={selectClass}
+          >
+            <option value="all">Tous les statuts</option>
+            <option value="active">Actifs</option>
+            <option value="inactive">Inactifs</option>
+          </select>
 
           {/* Type d'employé */}
-          <Select value={filters.employeeType} onValueChange={(value: 'all' | 'permanent' | 'intern') => onFilterChange({ ...filters, employeeType: value })}>
-            <SelectTrigger>
-              <SelectValue placeholder="Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tous les types</SelectItem>
-              <SelectItem value="permanent">Permanents</SelectItem>
-              <SelectItem value="intern">Stagiaires</SelectItem>
-            </SelectContent>
-          </Select>
+          <select
+            value={filters.employeeType}
+            onChange={(e) => onFilterChange({ ...filters, employeeType: e.target.value as 'all' | 'permanent' | 'intern' })}
+            className={selectClass}
+          >
+            <option value="all">Tous les types</option>
+            <option value="permanent">Permanents</option>
+            <option value="intern">Stagiaires</option>
+          </select>
 
           {/* Service */}
-          <Select value={filters.service} onValueChange={(value) => onFilterChange({ ...filters, service: value })}>
-            <SelectTrigger>
-              <SelectValue placeholder="Département" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tous les départements</SelectItem>
-              {services.map(service => (
-                <SelectItem key={service.id} value={service.id}>
-                  {service.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <select
+            value={filters.service}
+            onChange={(e) => onFilterChange({ ...filters, service: e.target.value })}
+            className={selectClass}
+          >
+            <option value="all">Tous les départements</option>
+            {services.map(service => (
+              <option key={service.id} value={service.id}>
+                {service.name}
+              </option>
+            ))}
+          </select>
         </div>
       </CardContent>
     </Card>

@@ -2,13 +2,6 @@ import React from "react";
 import { Search, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { BadgeFilters as BadgeFiltersType, Service } from "@/types/badge.types";
 import { Card, CardContent } from "../ui/card";
 
@@ -18,6 +11,9 @@ interface BadgeFiltersProps {
   onSearch: (value: string) => void;
   services: Service[];
 }
+
+const selectClass =
+  "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
 
 export const BadgeFilters: React.FC<BadgeFiltersProps> = ({
   filters,
@@ -46,50 +42,38 @@ export const BadgeFilters: React.FC<BadgeFiltersProps> = ({
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-              <Select
+              <select
                 value={filters.status}
-                onValueChange={(value) => onFilterChange("status", value)}
+                onChange={(e) => onFilterChange("status", e.target.value)}
+                className={selectClass}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Statut" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous les statuts</SelectItem>
-                  <SelectItem value="active">Actifs</SelectItem>
-                  <SelectItem value="inactive">Inactifs</SelectItem>
-                </SelectContent>
-              </Select>
+                <option value="all">Tous les statuts</option>
+                <option value="active">Actifs</option>
+                <option value="inactive">Inactifs</option>
+              </select>
 
-              <Select
+              <select
                 value={filters.employeeType}
-                onValueChange={(value) => onFilterChange("employeeType", value)}
+                onChange={(e) => onFilterChange("employeeType", e.target.value)}
+                className={selectClass}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous les types</SelectItem>
-                  <SelectItem value="permanent">Permanents</SelectItem>
-                  <SelectItem value="intern">Stagiaires</SelectItem>
-                </SelectContent>
-              </Select>
+                <option value="all">Tous les types</option>
+                <option value="permanent">Permanents</option>
+                <option value="intern">Stagiaires</option>
+              </select>
 
-              <Select
+              <select
                 value={filters.service}
-                onValueChange={(value) => onFilterChange("service", value)}
+                onChange={(e) => onFilterChange("service", e.target.value)}
+                className={selectClass}
               >
-                <SelectTrigger>
-                  <SelectValue placeholder="Service" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Tous les services</SelectItem>
-                  {services.map((service) => (
-                    <SelectItem key={service.id} value={service.code}>
-                      {service.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                <option value="all">Tous les services</option>
+                {services.map((service) => (
+                  <option key={service.id} value={service.code}>
+                    {service.name}
+                  </option>
+                ))}
+              </select>
 
               <Button type="submit" className="w-full">
                 <Filter className="mr-2 h-4 w-4" />
