@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format, parse, parseISO, eachDayOfInterval, startOfDay, differenceInMinutes } from "date-fns";
-import { RefreshCw, FileBarChart2, CalendarX, Clock, Users, UserX } from "lucide-react";
+import { RefreshCw, FileBarChart2, CalendarX, Clock, Users, UserX, FileText, FileSpreadsheet, FileDown } from "lucide-react";
 import { Sidebar } from "@/components/sidebar/Sidebar";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,6 +14,8 @@ import InternsList from "@/components/dashboard/InternsList";
 import { useAttendanceSettings } from "@/contexts/AttendanceSettingsContext";
 import employeeService from "@/services/employee.service";
 import apiService from "@/services/api.service";
+import { downloadFile } from "@/utils/download";
+import { toast } from "sonner";
 import { Employee, EmployeeListResponse } from "@/types/employee.types";
 
 type ScanType = "check_in" | "check_out";
@@ -336,6 +338,23 @@ const Reports = () => {
     refetchScans();
   };
 
+  const handleExport = async (format: "pdf" | "xlsx" | "csv") => {
+    try {
+      const params = new URLSearchParams();
+      params.append("format", format);
+      if (queryFilters.date) params.append("date", queryFilters.date);
+      if (queryFilters.startDate) params.append("startDate", queryFilters.startDate);
+      if (queryFilters.endDate) params.append("endDate", queryFilters.endDate);
+      await downloadFile(
+        `/reports/attendance?${params.toString()}`,
+        `rapport_pointage.${format}`,
+      );
+    } catch (error) {
+      console.error("Erreur export:", error);
+      toast.error((error as Error).message);
+    }
+  };
+
   const formatDateDisplay = (value: string) => {
     if (!value) return "—";
     const parsed = parseFilterDate(value);
@@ -359,10 +378,36 @@ const Reports = () => {
             title="Rapports de pointage"
             description="Visualisez les employés absents ou en retard selon les horaires configurés."
             actions={
-              <Button variant="outline" onClick={handleRefresh} disabled={isLoading || isFetching}>
-                <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
-                Actualiser
-              </Button>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="outline"
+                  onClick={() => handleExport("pdf")}
+                  title="Exporter en PDF"
+                >
+                  <FileText className="mr-2 h-4 w-4" />
+                  PDF
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleExport("xlsx")}
+                  title="Exporter en Excel"
+                >
+                  <FileSpreadsheet className="mr-2 h-4 w-4" />
+                  Excel
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => handleExport("csv")}
+                  title="Exporter en CSV"
+                >
+                  <FileDown className="mr-2 h-4 w-4" />
+                  CSV
+                </Button>
+                <Button variant="outline" onClick={handleRefresh} disabled={isLoading || isFetching}>
+                  <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+                  Actualiser
+                </Button>
+              </div>
             }
           />
 

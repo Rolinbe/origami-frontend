@@ -17,6 +17,7 @@ import {
 } from "@/types/badge.types";
 import badgeService from "@/services/badge.service";
 import serviceService from "@/services/service.service";
+import { downloadFile } from "@/utils/download";
 import { Service } from "@/types/service.types";
 
 const BadgeManagement: React.FC = () => {
@@ -171,8 +172,17 @@ const BadgeManagement: React.FC = () => {
     }
   };
 
-  const handleCreateBadge = async (userId: string) => {
+  const handlePrintBadge = async (badge: Badge) => {
     try {
+      await downloadFile(`/badges/${badge.badgeId}/pdf`, `${badge.badgeId}.pdf`);
+      toast.success("Badge téléchargé pour impression");
+    } catch (error) {
+      console.error("Erreur impression badge:", error);
+      toast.error((error as Error).message);
+    }
+  };
+
+  const handleCreateBadge = async (userId: string) => {    try {
       setIsSubmitting(true);
       const newBadge = await badgeService.createBadge(userId);
 
@@ -257,6 +267,7 @@ const BadgeManagement: React.FC = () => {
                     onView={handleViewBadge}
                     onRevoke={handleRevokeBadge}
                     onReactivate={handleReactivateBadge}
+                    onPrint={handlePrintBadge}
                     isSubmitting={isSubmitting}
                   />
                 ))}

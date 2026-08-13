@@ -11,6 +11,7 @@ import Employees from "./pages/Employees";
 import BadgeManagement from "./pages/BadgeManagement";
 import SettingsPage from "./pages/Settings";
 import Reports from "./pages/Reports";
+import Scan from "./pages/Scan";
 import { AttendanceSettingsProvider } from "./contexts/AttendanceSettingsContext";
 import { AuthProvider, useAuthContext } from "./store/AuthContext";
 
@@ -89,6 +90,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <SettingsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/scan"
+        element={
+          <ProtectedRoute>
+            <Scan />
           </ProtectedRoute>
         }
       />

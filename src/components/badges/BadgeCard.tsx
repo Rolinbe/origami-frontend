@@ -1,5 +1,5 @@
 import React from "react";
-import { RefreshCw, Ban, CheckCircle } from "lucide-react";
+import { RefreshCw, Ban, CheckCircle, Printer } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge as BadgeUI } from "@/components/ui/badge";
@@ -10,6 +10,7 @@ interface BadgeCardProps {
   onView: (badge: Badge) => void;
   onRevoke: (badge: Badge) => void;
   onReactivate: (badge: Badge) => void;
+  onPrint?: (badge: Badge) => void;
   isSubmitting?: boolean;
 }
 
@@ -18,6 +19,7 @@ export const BadgeCard: React.FC<BadgeCardProps> = ({
   onView,
   onRevoke,
   onReactivate,
+  onPrint,
   isSubmitting = false,
 }) => {
   const getStatusColor = (isActive: boolean): string => {
@@ -124,6 +126,18 @@ export const BadgeCard: React.FC<BadgeCardProps> = ({
               >
                 Voir détails
               </Button>
+
+              {onPrint && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => onPrint(badge)}
+                  disabled={isSubmitting}
+                >
+                  <Printer className="mr-1 h-3 w-3" />
+                  Imprimer
+                </Button>
+              )}
 
               {badge.isActive ? (
                 <Button

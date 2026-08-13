@@ -1,9 +1,10 @@
-import { useState, useEffect } from "react";
-import { Users, UserCheck, UserX, UserPlus, Building2 } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Users, UserCheck, UserX, UserPlus, Building2, Upload, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/PageHeader";
 import { Sidebar } from "@/components/sidebar/Sidebar";
 import { toast } from "sonner";
+import apiService from "@/services/api.service";
 
 // Import des composants
 import { EmployeeStatsCard } from "@/components/employees/EmployeeStatsCard";
@@ -50,6 +51,71 @@ const Employees: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const itemsPerPage = 10;
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleDownloadTemplate = async () => {
+    try {
+      const response = await apiService.get<unknown>("/employees/import-template");
+      const blob = new Blob([response.data as unknown as BlobPart], {
+        type: "text/csv;charset=utf-8",
+      });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "modele_import_employes.csv";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Erreur téléchargement modèle:", error);
+      toast.error("Impossible de télécharger le modèle");
+    }
+  };
+
+  const handleImportFile = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const response = await apiService.post<{
+        message: string;
+        imported: number;
+        failed: number;
+        errors?: { line: number; email: string; error: string }[];
+      }>("/employees/import", formData);
+      const data = response.data;
+      toast.success(`${data.message}`);
+      if (data.errors && data.errors.length > 0) {
+        console.warn("Erreurs d'import:", data.errors);
+        toast.error(`Lignes en erreur: ${data.failed}`);
+      }
+      const refreshed = await employeeService.getAllEmployees(
+        currentPage,
+        itemsPerPage,
+        filters
+      );
+      setEmployees(refreshed.employees);
+      setTotalPages(refreshed.totalPages);
+      setTotalEmployees(refreshed.totalEmployees);
+    } catch (error) {
+      console.error("Erreur import CSV:", error);
+      toast.error("Impossible d'importer le fichier CSV");
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
 
   // Fonction principale de soumission (CRÉATION ET MODIFICATION)
   const handleEmployeeSubmit = async (data: EmployeeFormData) => {
@@ -256,11 +322,28 @@ const Employees: React.FC = () => {
               title="Gestion des employés"
               description="Gérez et suivez tous vos employés"
               actions={
-                <Button className="bg-primary hover:bg-primary/90" onClick={handleCreateEmployee}>
-                  <UserPlus className="mr-2 h-4 w-4" />
-                  Nouvel employé
-                </Button>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" onClick={handleDownloadTemplate}>
+                    <Download className="mr-2 h-4 w-4" />
+                    Modèle CSV
+                  </Button>
+                  <Button variant="outline" onClick={handleImportClick}>
+                    <Upload className="mr-2 h-4 w-4" />
+                    Importer CSV
+                  </Button>
+                  <Button className="bg-primary hover:bg-primary/90" onClick={handleCreateEmployee}>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Nouvel employé
+                  </Button>
+                </div>
               }
+            />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".csv,text/csv"
+              className="hidden"
+              onChange={handleImportFile}
             />
 
             {/* Stats */}

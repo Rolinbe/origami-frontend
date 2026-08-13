@@ -6,6 +6,7 @@ import {
   Badge,
   BookMarked,
   Settings,
+  ScanBarcode,
 } from "lucide-react";
 import { NavItem } from "./types";
 
@@ -27,6 +28,11 @@ export const navigationItems: NavItem[] = [
     title: "Badges",
     icon: Badge,
     path: "/badges"
+  },
+  {
+    title: "Poste de pointage",
+    icon: ScanBarcode,
+    path: "/scan"
   },
   {
     title: "Rapports",
