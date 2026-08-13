@@ -12,6 +12,7 @@ import BadgeManagement from "./pages/BadgeManagement";
 import SettingsPage from "./pages/Settings";
 import Reports from "./pages/Reports";
 import Scan from "./pages/Scan";
+import ErrorBoundary from "./components/ErrorBoundary";
 import { AttendanceSettingsProvider } from "./contexts/AttendanceSettingsContext";
 import { AuthProvider, useAuthContext } from "./store/AuthContext";
 
@@ -114,7 +115,9 @@ const App = () => (
           <TooltipProvider>
             <Toaster />
             <Sonner />
-            <AppRoutes />
+            <ErrorBoundary>
+              <AppRoutes />
+            </ErrorBoundary>
           </TooltipProvider>
         </AttendanceSettingsProvider>
       </AuthProvider>

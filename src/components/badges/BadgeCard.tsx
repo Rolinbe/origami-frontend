@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge as BadgeUI } from "@/components/ui/badge";
 import { Badge } from "@/types/badge.types";
+import { formatDateFr } from "@/utils/dateFormat";
 
 interface BadgeCardProps {
   badge: Badge;
@@ -106,11 +107,11 @@ export const BadgeCard: React.FC<BadgeCardProps> = ({
               </div>
 
               <div className="text-xs text-gray-500">
-                Créé le {new Date(badge.issuedAt).toLocaleDateString("fr-FR")}
+                Créé le {formatDateFr(badge.issuedAt)}
                 {badge.revokedAt && (
                   <span>
                     {" • Révoqué le "}
-                    {new Date(badge.revokedAt).toLocaleDateString("fr-FR")}
+                    {formatDateFr(badge.revokedAt)}
                   </span>
                 )}
               </div>

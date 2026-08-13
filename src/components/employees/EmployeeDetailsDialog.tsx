@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Employee, Service } from "@/types/employee.types";
+import { formatDateFr, formatDateTimeFr } from "@/utils/dateFormat";
 
 interface EmployeeDetailsDialogProps {
   employee: Employee | null;
@@ -125,9 +126,7 @@ export const EmployeeDetailsDialog: React.FC<EmployeeDetailsDialogProps> = ({
               </h4>
               <p className="text-sm">
                 {employee.contractStartDate
-                  ? new Date(employee.contractStartDate).toLocaleDateString(
-                      "fr-FR"
-                    )
+                  ? formatDateFr(employee.contractStartDate)
                   : "Non renseigné"}
               </p>
             </div>
@@ -137,9 +136,7 @@ export const EmployeeDetailsDialog: React.FC<EmployeeDetailsDialogProps> = ({
                   Date de fin
                 </h4>
                 <p className="text-sm">
-                  {new Date(employee.contractEndDate).toLocaleDateString(
-                    "fr-FR"
-                  )}
+                  {formatDateFr(employee.contractEndDate)}
                 </p>
               </div>
             )}
@@ -149,7 +146,7 @@ export const EmployeeDetailsDialog: React.FC<EmployeeDetailsDialogProps> = ({
                   Dernière connexion
                 </h4>
                 <p className="text-sm">
-                  {new Date(employee.lastLogin).toLocaleString("fr-FR")}
+                  {formatDateTimeFr(employee.lastLogin)}
                 </p>
               </div>
             )}
@@ -175,9 +172,7 @@ export const EmployeeDetailsDialog: React.FC<EmployeeDetailsDialogProps> = ({
                     {employee.attendances.map((attendance) => (
                       <tr key={attendance.id} className="border-b">
                         <td className="py-2 px-2">
-                          {new Date(attendance.date).toLocaleDateString(
-                            "fr-FR"
-                          )}
+                          {formatDateFr(attendance.date)}
                         </td>
                         <td className="py-2 px-2">
                           {attendance.checkInTime || "-"}

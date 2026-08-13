@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge as BadgeUI } from "@/components/ui/badge";
 import { Badge } from "@/types/badge.types";
+import { formatDateFr } from "@/utils/dateFormat";
 
 interface BadgeDetailModalProps {
   badge: Badge | null;
@@ -70,14 +71,14 @@ export const BadgeDetailModal: React.FC<BadgeDetailModalProps> = ({
               <div>
                 <p className="text-sm text-gray-500">Date d'émission</p>
                 <p className="font-medium">
-                  {new Date(badge.issuedAt).toLocaleDateString("fr-FR")}
+                  {formatDateFr(badge.issuedAt)}
                 </p>
               </div>
               {!badge.isActive && badge.revokedAt && (
                 <div>
                   <p className="text-sm text-gray-500">Date de révocation</p>
                   <p className="font-medium">
-                    {new Date(badge.revokedAt).toLocaleDateString("fr-FR")}
+                    {formatDateFr(badge.revokedAt)}
                   </p>
                 </div>
               )}
@@ -144,9 +145,7 @@ export const BadgeDetailModal: React.FC<BadgeDetailModalProps> = ({
                 <div>
                   <p className="text-sm text-gray-500">Début de contrat</p>
                   <p className="font-medium">
-                    {new Date(badge.user.contractStartDate).toLocaleDateString(
-                      "fr-FR"
-                    )}
+                    {formatDateFr(badge.user.contractStartDate)}
                   </p>
                 </div>
               )}
@@ -154,9 +153,7 @@ export const BadgeDetailModal: React.FC<BadgeDetailModalProps> = ({
                 <div>
                   <p className="text-sm text-gray-500">Fin de contrat</p>
                   <p className="font-medium">
-                    {new Date(badge.user.contractEndDate).toLocaleDateString(
-                      "fr-FR"
-                    )}
+                    {formatDateFr(badge.user.contractEndDate)}
                   </p>
                 </div>
               )}

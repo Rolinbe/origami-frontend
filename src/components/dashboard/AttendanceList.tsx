@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAttendanceSettings } from "@/contexts/AttendanceSettingsContext";
 import apiService from "@/services/api.service";
+import { formatTimeFr } from "@/utils/dateFormat";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -271,10 +272,7 @@ const AttendanceList = () => {
                   <div className="flex items-center gap-3">
                     <div className="text-right">
                       <p className="text-sm font-medium">
-                        {new Date(row.scanTime).toLocaleTimeString("fr-FR", {
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        })}
+                        {formatTimeFr(row.scanTime)}
                       </p>
                       {row.isLate && (
                         <p className="text-xs text-destructive">+{row.lateMinutes} min</p>

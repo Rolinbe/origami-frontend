@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Clock } from "lucide-react";
 import { useAttendanceSettings } from "@/contexts/AttendanceSettingsContext";
 import apiService from "@/services/api.service";
+import { formatTimeFr } from "@/utils/dateFormat";
 
 type ScanType = "check_in" | "check_out";
 
@@ -188,11 +189,7 @@ const LateEmployees = () => {
                     +{employee.lateMinutes} min
                   </Badge>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Pointé à{" "}
-                    {new Date(employee.scanTime).toLocaleTimeString("fr-FR", {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    })}
+                    Pointé à {formatTimeFr(employee.scanTime)}
                   </p>
                 </div>
               </div>
