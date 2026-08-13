@@ -281,30 +281,14 @@ const Scan = () => {
                   </button>
                 </div>
 
-                <div className="flex flex-wrap gap-3">
-                  <Button
-                    variant={scanning ? "outline" : "default"}
-                    onClick={scanning ? stopCamera : startCamera}
-                  >
-                    <Camera className="mr-2 h-4 w-4" />
-                    {scanning ? "Désactiver la caméra" : "Activer la caméra"}
-                  </Button>
-                </div>
-
-                <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-slate-950">
+                <div className={`relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-slate-950 ${scanning ? "" : "hidden"}`}>
                   <video
                     ref={videoRef}
+                    autoPlay
                     muted
                     playsInline
-                    className={`absolute inset-0 h-full w-full object-cover ${scanning ? "" : "opacity-0"}`}
+                    className={`h-full w-full object-contain ${scanning ? "" : "hidden"}`}
                   />
-
-                  {!scanning && (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-slate-400">
-                      <Camera className="h-10 w-10 opacity-40" />
-                      <p className="text-sm font-medium">La caméra est éteinte</p>
-                    </div>
-                  )}
 
                   {scanning && (
                     <div className="pointer-events-none absolute inset-0">
@@ -333,6 +317,16 @@ const Scan = () => {
                       </div>
                     </div>
                   )}
+                </div>
+
+                <div className="flex flex-wrap gap-3">
+                  <Button
+                    variant={scanning ? "outline" : "default"}
+                    onClick={scanning ? stopCamera : startCamera}
+                  >
+                    <Camera className="mr-2 h-4 w-4" />
+                    {scanning ? "Désactiver la caméra" : "Activer la caméra"}
+                  </Button>
                 </div>
 
                 {cameraError && (
