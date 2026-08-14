@@ -10,6 +10,7 @@ interface StatsCardProps {
   description?: string;
   variant?: "default" | "success" | "warning" | "destructive";
   delay?: number;
+  isLoading?: boolean;
 }
 
 const styleMap = {
@@ -35,10 +36,10 @@ const styleMap = {
   },
 };
 
-const StatsCard = ({ title, value, icon: Icon, description, variant = "default", delay = 0 }: StatsCardProps) => {
+const StatsCard = ({ title, value, icon: Icon, description, variant = "default", delay = 0, isLoading = false }: StatsCardProps) => {
   const styles = styleMap[variant];
   const isNumeric = typeof value === "number";
-  const animatedValue = useCountUp(isNumeric ? (value as number) : 0, { delay });
+  const animatedValue = useCountUp(isNumeric ? (value as number) : 0, { delay, enabled: !isLoading });
 
   return (
     <Card
@@ -68,7 +69,12 @@ const StatsCard = ({ title, value, icon: Icon, description, variant = "default",
 
         <div className="mt-3">
           <div className="flex items-baseline gap-2">
-            {isNumeric ? (
+            {isLoading ? (
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-16 animate-pulse rounded-md bg-muted" />
+                <div className="h-px flex-1 animate-pulse bg-border/60" />
+              </div>
+            ) : isNumeric ? (
               <span className={cn("text-3xl font-bold tracking-tight tabular-nums", styles.valueColor)}>
                 {animatedValue}
               </span>

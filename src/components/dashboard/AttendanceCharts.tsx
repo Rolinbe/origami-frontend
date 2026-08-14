@@ -24,7 +24,6 @@ interface OverviewResponse {
   lateToday: number;
   absentToday: number;
 }
-
 const fetchWeeklyTrends = async (): Promise<WeeklyTrendResponse> => {
   const response = await apiService.get<WeeklyTrendResponse>("/dashboard/weekly-trends");
   return response.data;
@@ -157,16 +156,22 @@ const AttendanceCharts = () => {
     const present = Number.isFinite(overview.presentToday) ? Number(overview.presentToday) : 0;
     const late = Number.isFinite(overview.lateToday) ? Number(overview.lateToday) : 0;
     const absence = Number.isFinite(overview.absentToday) ? Number(overview.absentToday) : 0;
-    const total = present + late + absence;
+    const totalEmployees = Number.isFinite(overview.totalEmployees)
+      ? Number(overview.totalEmployees)
+      : 0;
 
-    const presentPercent = total > 0 ? Math.round((present / total) * 100) : 0;
+    const denominator = totalEmployees > 0 ? totalEmployees : present + late + absence;
+    const presentPercent =
+      denominator > 0
+        ? Math.min(100, Math.round((present / denominator) * 100))
+        : 0;
 
     return {
       presentPercent,
       present,
       late,
       absent: absence,
-      total,
+      total: denominator,
     };
   }, [overview]);
 

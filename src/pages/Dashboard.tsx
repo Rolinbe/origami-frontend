@@ -83,6 +83,7 @@ const Dashboard = () => {
                 value={isError ? "—" : stats.total}
                 icon={Users}
                 delay={60}
+                isLoading={isLoading}
                 description={
                   isError
                     ? (error as Error)?.message ?? "Erreur de chargement"
@@ -95,6 +96,7 @@ const Dashboard = () => {
                 icon={UserCheck}
                 variant="success"
                 delay={140}
+                isLoading={isLoading}
                 description="À l'heure aujourd'hui"
               />
               <StatsCard
@@ -103,6 +105,7 @@ const Dashboard = () => {
                 icon={Clock}
                 variant="warning"
                 delay={220}
+                isLoading={isLoading}
                 description="En retard aujourd'hui"
               />
               <StatsCard
@@ -111,6 +114,7 @@ const Dashboard = () => {
                 icon={UserX}
                 variant="destructive"
                 delay={300}
+                isLoading={isLoading}
                 description="Non pointés aujourd'hui"
               />
             </div>
