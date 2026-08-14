@@ -12,11 +12,11 @@ interface EmployeeStatsCardProps {
   description?: string;
 }
 
-const styles: Record<Variant, { iconBg: string; iconColor: string }> = {
-  default: { iconBg: "bg-primary/10", iconColor: "text-primary" },
-  success: { iconBg: "bg-success/10", iconColor: "text-success" },
-  warning: { iconBg: "bg-warning/10", iconColor: "text-warning" },
-  destructive: { iconBg: "bg-destructive/10", iconColor: "text-destructive" },
+const styles: Record<Variant, { iconBg: string; iconColor: string; valueColor: string }> = {
+  default: { iconBg: "bg-primary/10", iconColor: "text-primary", valueColor: "text-primary" },
+  success: { iconBg: "bg-success/10", iconColor: "text-success", valueColor: "text-success" },
+  warning: { iconBg: "bg-warning/10", iconColor: "text-warning", valueColor: "text-warning" },
+  destructive: { iconBg: "bg-destructive/10", iconColor: "text-destructive", valueColor: "text-destructive" },
 };
 
 export const EmployeeStatsCard: React.FC<EmployeeStatsCardProps> = ({
@@ -26,7 +26,7 @@ export const EmployeeStatsCard: React.FC<EmployeeStatsCardProps> = ({
   variant = "default",
   description,
 }) => {
-  const { iconBg, iconColor } = styles[variant];
+  const { iconBg, iconColor, valueColor } = styles[variant];
 
   return (
     <Card className="group transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lift">
@@ -42,7 +42,7 @@ export const EmployeeStatsCard: React.FC<EmployeeStatsCardProps> = ({
         </div>
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold tracking-tight">{value}</div>
+        <div className={cn("text-3xl font-bold tracking-tight tabular-nums", valueColor)}>{value}</div>
         {description && (
           <p className="mt-1 text-xs text-muted-foreground">{description}</p>
         )}
