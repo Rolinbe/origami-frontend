@@ -61,7 +61,7 @@ export const Sidebar = () => {
       </div>
 
       {/* Navigation - Scrollable */}
-      <nav className="scrollbar-thin relative flex-1 space-y-1 overflow-y-auto px-3 py-5 min-h-0">
+      <nav className="scrollbar-hide relative flex-1 space-y-1 overflow-y-auto px-3 py-5 min-h-0">
         {navigationItems.map((item, index) => (
           <NavGroup key={index} item={item} />
         ))}

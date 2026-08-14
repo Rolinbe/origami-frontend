@@ -1,10 +1,11 @@
 import React from "react";
-import { Ban, CheckCircle, Printer } from "lucide-react";
+import { Ban, CheckCircle, Copy, Printer } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge as BadgeUI } from "@/components/ui/badge";
 import { Badge } from "@/types/badge.types";
 import { formatDateFr } from "@/utils/dateFormat";
+import { toast } from "sonner";
 
 interface BadgeCardProps {
   badge: Badge;
@@ -48,6 +49,27 @@ export const BadgeCard: React.FC<BadgeCardProps> = ({
 }) => {
   const serviceColor = badge.user?.service?.color || FALLBACK_COLOR;
   const initials = `${badge.user?.firstName?.[0] ?? ""}${badge.user?.lastName?.[0] ?? ""}`;
+
+  const handleCopyId = async () => {
+    try {
+      await navigator.clipboard.writeText(badge.badgeId);
+      toast.success("Badge ID copié");
+    } catch {
+      try {
+        const el = document.createElement("textarea");
+        el.value = badge.badgeId;
+        el.style.position = "fixed";
+        el.style.opacity = "0";
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand("copy");
+        document.body.removeChild(el);
+        toast.success("Badge ID copié");
+      } catch {
+        toast.error("Impossible de copier l'ID du badge");
+      }
+    }
+  };
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
@@ -154,13 +176,24 @@ export const BadgeCard: React.FC<BadgeCardProps> = ({
               QR
             </div>
           )}
-          <div className="min-w-0">
+          <div className="min-w-0 flex-1">
             <p className="text-[11px] uppercase tracking-wide text-gray-400">
               Badge ID
             </p>
-            <code className="block truncate rounded bg-white px-2 py-1 font-mono text-xs font-semibold text-slate-700">
-              {badge.badgeId}
-            </code>
+            <div className="flex items-center gap-1">
+              <code className="flex-1 truncate rounded bg-white px-2 py-1 font-mono text-xs font-semibold text-slate-700">
+                {badge.badgeId}
+              </code>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="h-7 w-7 shrink-0 text-gray-400 hover:text-slate-700"
+                title="Copier l'ID du badge"
+                onClick={handleCopyId}
+              >
+                <Copy className="h-3.5 w-3.5" />
+              </Button>
+            </div>
             <p className="mt-1 text-xs text-gray-500">
               Créé le {formatDateFr(badge.issuedAt)}
               {badge.revokedAt && (
