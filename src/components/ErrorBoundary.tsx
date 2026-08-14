@@ -16,6 +16,7 @@ interface ErrorBoundaryState {
 }
 
 class ErrorBoundary extends Component<ResetAwareErrorBoundaryProps, ErrorBoundaryState> {
+  private timer: number | null = null;
   constructor(props: ResetAwareErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, message: "" };
@@ -39,6 +40,16 @@ class ErrorBoundary extends Component<ResetAwareErrorBoundaryProps, ErrorBoundar
     window.location.reload();
   };
 
+  componentDidMount() {
+    if (this.state.hasError) {
+      this.timer = window.setTimeout(() => this.handleReload(), 6000);
+    }
+  }
+
+  componentWillUnmount() {
+    if (this.timer) window.clearTimeout(this.timer);
+  }
+
   render() {
     if (this.state.hasError) {
       return (
@@ -49,8 +60,8 @@ class ErrorBoundary extends Component<ResetAwareErrorBoundaryProps, ErrorBoundar
             </div>
             <h1 className="text-lg font-semibold">Une erreur est survenue</h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Cette page a rencontré un problème inattendu. Vous pouvez
-              recharger la page pour continuer.
+              Cette page a rencontré un problème inattendu. Rechargement
+              automatique…
             </p>
             {this.state.message && (
               <pre className="mt-4 overflow-x-auto rounded-lg bg-muted p-3 text-left text-xs text-destructive">
@@ -63,7 +74,7 @@ class ErrorBoundary extends Component<ResetAwareErrorBoundaryProps, ErrorBoundar
               className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
             >
               <RotateCcw className="h-4 w-4" />
-              Recharger la page
+              Recharger maintenant
             </button>
           </div>
         </div>
