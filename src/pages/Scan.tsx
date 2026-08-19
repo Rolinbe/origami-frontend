@@ -44,18 +44,52 @@ const extractBadgeId = (qrCodeData: string): string | null => {
   }
 };
 
+let audioCtx: AudioContext | null = null;
+
+const getAudioCtx = (): AudioContext | null => {
+  if (typeof window === "undefined") return null;
+  const AC =
+    window.AudioContext ??
+    (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+  if (!AC) return null;
+  if (!audioCtx) audioCtx = new AC();
+  if (audioCtx.state === "suspended") {
+    void audioCtx.resume();
+  }
+  return audioCtx;
+};
+
+const playTone = (
+  ctx: AudioContext,
+  frequency: number,
+  delay: number,
+  duration: number,
+  type: OscillatorType = "sine",
+  volume = 0.3,
+) => {
+  const oscillator = ctx.createOscillator();
+  const gain = ctx.createGain();
+  oscillator.type = type;
+  oscillator.frequency.value = frequency;
+  gain.gain.setValueAtTime(volume, ctx.currentTime + delay);
+  gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
+  oscillator.connect(gain);
+  gain.connect(ctx.destination);
+  oscillator.start(ctx.currentTime + delay);
+  oscillator.stop(ctx.currentTime + delay + duration);
+};
+
 const playBeep = (success: boolean) => {
   try {
-    const ctx = new AudioContext();
-    const oscillator = ctx.createOscillator();
-    const gain = ctx.createGain();
-    oscillator.connect(gain);
-    gain.connect(ctx.destination);
-    oscillator.frequency.value = success ? 880 : 220;
-    oscillator.type = "sine";
-    gain.gain.setValueAtTime(0.2, ctx.currentTime);
-    oscillator.start();
-    oscillator.stop(ctx.currentTime + 0.25);
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    if (success) {
+      playTone(ctx, 880, 0, 0.13);
+      playTone(ctx, 1320, 0.16, 0.22);
+    } else {
+      playTone(ctx, 220, 0, 0.18, "square", 0.22);
+      playTone(ctx, 180, 0.22, 0.28, "square", 0.22);
+    }
   } catch {
     // audio non disponible (permission, navigateur)
   }
