@@ -15,6 +15,7 @@ import {
 import { useAuthContext } from "@/store/AuthContext";
 import { navigationItems } from "./navigationItems";
 import { NavGroup } from "./NavGroup";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import logo from "@/assets/icons/logo.png";
 
 export const Sidebar = () => {
@@ -82,18 +83,20 @@ export const Sidebar = () => {
           </div>
           <ShieldCheck className="ml-auto h-4 w-4 shrink-0 text-indigo-300" />
         </div>
-        <AlertDialog>
-          <AlertDialogTrigger asChild>
-            <Button
-              variant="ghost"
-              className="w-full border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10 hover:text-white"
-              size="sm"
-              disabled={isLoggingOut}
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              {isLoggingOut ? "Déconnexion..." : "Déconnexion"}
-            </Button>
-          </AlertDialogTrigger>
+        <div className="flex gap-2">
+          <ThemeToggle />
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="ghost"
+                className="flex-1 border border-white/10 bg-white/5 text-slate-200 hover:bg-white/10 hover:text-white"
+                size="sm"
+                disabled={isLoggingOut}
+              >
+                <LogOut className="mr-2 h-4 w-4" />
+                {isLoggingOut ? "Déconnexion..." : "Déconnexion"}
+              </Button>
+            </AlertDialogTrigger>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Confirmer la déconnexion</AlertDialogTitle>
@@ -110,6 +113,7 @@ export const Sidebar = () => {
             </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+        </div>
       </div>
     </aside>
   );

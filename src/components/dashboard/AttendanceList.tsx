@@ -17,6 +17,7 @@ import { toast } from "sonner";
 import { useAttendanceSettings } from "@/contexts/AttendanceSettingsContext";
 import apiService from "@/services/api.service";
 import { formatTimeFr } from "@/utils/dateFormat";
+import { LoadingBar } from "@/components/LoadingBar";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -70,18 +71,25 @@ const fetchAttendanceHistory = async (): Promise<ScanHistoryItem[]> => {
 const AttendanceList = () => {
   const { settings } = useAttendanceSettings();
   const [currentPage, setCurrentPage] = useState(1);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const {
     data: scanLogs = [],
     isLoading,
     isError,
     error,
     refetch,
-    isFetching,
   } = useQuery({
     queryKey: ["dashboard-attendance-history"],
     queryFn: fetchAttendanceHistory,
     refetchInterval: 60_000,
   });
+
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refetch();
+    setIsRefreshing(false);
+    toast.success("Données actualisées");
+  };
 
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
 
@@ -196,7 +204,8 @@ const AttendanceList = () => {
   };
 
   return (
-    <Card className="h-full flex flex-col transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lift">
+    <Card className="relative h-full flex flex-col transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lift">
+      <LoadingBar isLoading={isRefreshing || isLoading} />
       <CardHeader>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -219,10 +228,11 @@ const AttendanceList = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => refetch()}
-              disabled={isLoading || isFetching}
+              onClick={handleRefresh}
+              disabled={isLoading || isRefreshing}
               className="flex items-center gap-2"
             >
+              <RefreshCw className={`h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
               Actualiser
             </Button>
           </div>
@@ -295,7 +305,7 @@ const AttendanceList = () => {
                 variant="outline"
                 size="sm"
                 onClick={handlePrevious}
-                disabled={currentPage === 1 || isLoading || isFetching}
+                disabled={currentPage === 1 || isLoading || isRefreshing}
                 className="flex items-center gap-1"
               >
                 <ChevronLeft className="h-4 w-4" />
@@ -310,7 +320,7 @@ const AttendanceList = () => {
                 variant="outline"
                 size="sm"
                 onClick={handleNext}
-                disabled={currentPage === totalPages || isLoading || isFetching}
+                disabled={currentPage === totalPages || isLoading || isRefreshing}
                 className="flex items-center gap-1"
               >
                 Suivant

@@ -1,9 +1,12 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Users } from "lucide-react";
+import { RefreshCw, Users } from "lucide-react";
+import { toast } from "sonner";
 import apiService from "@/services/api.service";
+import { LoadingBar } from "@/components/LoadingBar";
 
 interface ServicePresenceStat {
   service: string;
@@ -27,24 +30,32 @@ const isHexColor = (value: string | null | undefined): value is string =>
   typeof value === "string" && /^#([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$/.test(value);
 
 const ServicePresence = () => {
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const {
     data: serviceStats = [],
     isLoading,
     isError,
     error,
     refetch,
-    isFetching,
   } = useQuery({
     queryKey: ["dashboard-service-presence-stats"],
     queryFn: fetchServiceStats,
     refetchInterval: 60_000,
   });
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refetch();
+    setIsRefreshing(false);
+    toast.success("Données actualisées");
+  };
+
   const totalPresent = serviceStats.reduce((sum, service) => sum + service.presentToday, 0);
   const totalEmployees = serviceStats.reduce((sum, service) => sum + service.totalEmployees, 0);
 
   return (
-    <Card className="transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lift">
+    <Card className="relative transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lift">
+      <LoadingBar isLoading={isRefreshing || isLoading} />
       <CardHeader className="pb-4">
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -63,9 +74,10 @@ const ServicePresence = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => refetch()}
-            disabled={isLoading || isFetching}
+            onClick={handleRefresh}
+            disabled={isLoading || isRefreshing}
           >
+            <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
             Actualiser
           </Button>
         </div>

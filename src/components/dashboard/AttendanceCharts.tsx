@@ -4,8 +4,10 @@ import { addDays, format, startOfWeek } from "date-fns";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 import apiService from "@/services/api.service";
 import { useCountUp } from "@/hooks/useCountUp";
+import { LoadingBar } from "@/components/LoadingBar";
 
 interface WeeklyTrendEntry {
   date: string;
@@ -90,6 +92,7 @@ const ChartDonut = ({ percent, size = 148 }: { percent: number; size?: number })
 
 const AttendanceCharts = () => {
   const [mounted, setMounted] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const {
     data: weeklyResponse,
@@ -97,7 +100,6 @@ const AttendanceCharts = () => {
     isError: isErrorWeekly,
     error: errorWeekly,
     refetch: refetchWeekly,
-    isFetching: isFetchingWeekly,
   } = useQuery({
     queryKey: ["dashboard-weekly-trends"],
     queryFn: fetchWeeklyTrends,
@@ -110,7 +112,6 @@ const AttendanceCharts = () => {
     isError: isErrorOverview,
     error: errorOverview,
     refetch: refetchOverview,
-    isFetching: isFetchingOverview,
   } = useQuery({
     queryKey: ["dashboard-overview"],
     queryFn: fetchOverview,
@@ -175,18 +176,20 @@ const AttendanceCharts = () => {
     };
   }, [overview]);
 
-  const handleRefresh = () => {
-    refetchWeekly();
-    refetchOverview();
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await Promise.all([refetchWeekly(), refetchOverview()]);
+    setIsRefreshing(false);
+    toast.success("Données actualisées");
   };
 
   const isLoading = isLoadingWeekly || isLoadingOverview;
-  const isFetching = isFetchingWeekly || isFetchingOverview;
   const isError = isErrorWeekly || isErrorOverview;
   const errorMessage = (errorWeekly as Error)?.message || (errorOverview as Error)?.message;
 
   return (
-    <Card className="group col-span-2 overflow-hidden rounded-xl transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lift">
+    <Card className="relative group col-span-2 overflow-hidden rounded-xl transition-all duration-300 ease-out hover:-translate-y-0.5 hover:shadow-lift">
+      <LoadingBar isLoading={isRefreshing || isLoading} />
       <CardHeader>
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -197,10 +200,10 @@ const AttendanceCharts = () => {
             variant="outline"
             size="sm"
             onClick={handleRefresh}
-            disabled={isLoading || isFetching}
+            disabled={isLoading || isRefreshing}
             className="shrink-0"
           >
-            <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${isFetching || isLoading ? "animate-spin" : ""}`} />
+            <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${isRefreshing ? "animate-spin" : ""}`} />
             Actualiser
           </Button>
         </div>

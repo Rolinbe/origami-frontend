@@ -334,8 +334,9 @@ const Reports = () => {
   };
 
   const handleRefresh = () => {
-    refetchEmployees();
-    refetchScans();
+    Promise.all([refetchEmployees(), refetchScans()]).then(() =>
+      toast.success("Données actualisées")
+    );
   };
 
   const handleExport = async (format: "pdf" | "xlsx" | "csv") => {

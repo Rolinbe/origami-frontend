@@ -3,6 +3,7 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { ThemeProvider } from "next-themes";
 import NotFound from "./pages/NotFound";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
@@ -119,20 +120,22 @@ const AppRoutes = () => {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <AuthProvider>
-        <AttendanceSettingsProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <CursorGlow />
-            <ErrorBoundary>
-              <AppRoutes />
-            </ErrorBoundary>
-          </TooltipProvider>
-        </AttendanceSettingsProvider>
-      </AuthProvider>
-    </BrowserRouter>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+      <BrowserRouter>
+        <AuthProvider>
+          <AttendanceSettingsProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <CursorGlow />
+              <ErrorBoundary>
+                <AppRoutes />
+              </ErrorBoundary>
+            </TooltipProvider>
+          </AttendanceSettingsProvider>
+        </AuthProvider>
+      </BrowserRouter>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

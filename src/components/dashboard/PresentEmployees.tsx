@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -5,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import apiService from "@/services/api.service";
+import { LoadingBar } from "@/components/LoadingBar";
 
 interface PresentEmployee {
   id: string;
@@ -31,21 +33,29 @@ const fetchPresentEmployees = async (): Promise<PresentEmployee[]> => {
 };
 
 const PresentEmployees = () => {
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const {
     data: presentEmployees = [],
     isLoading,
     isError,
     error,
     refetch,
-    isFetching,
   } = useQuery({
     queryKey: ["dashboard-present-employees"],
     queryFn: fetchPresentEmployees,
     refetchInterval: 60_000,
   });
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refetch();
+    setIsRefreshing(false);
+    toast.success("Données actualisées");
+  };
+
   return (
-    <Card className="transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lift">
+    <Card className="relative transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lift">
+      <LoadingBar isLoading={isRefreshing || isLoading} />
       <CardHeader>
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -64,10 +74,10 @@ const PresentEmployees = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => refetch().then(() => toast.success("Données actualisées"))}
-            disabled={isLoading || isFetching}
+            onClick={handleRefresh}
+            disabled={isLoading || isRefreshing}
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+            <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
             Actualiser
           </Button>
         </div>

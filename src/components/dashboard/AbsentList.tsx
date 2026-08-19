@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -5,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { RefreshCw, UserX } from "lucide-react";
 import { toast } from "sonner";
 import apiService from "@/services/api.service";
+import { LoadingBar } from "@/components/LoadingBar";
 
 interface AbsentEmployee {
   id: string;
@@ -26,25 +28,33 @@ const fetchAbsentEmployees = async (): Promise<AbsentEmployee[]> => {
 };
 
 const AbsentList = () => {
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const {
     data: absentEmployees = [],
     isLoading,
     isError,
     error,
     refetch,
-    isFetching,
   } = useQuery({
     queryKey: ["dashboard-absent-employees"],
     queryFn: fetchAbsentEmployees,
     refetchInterval: 60_000,
   });
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    await refetch();
+    setIsRefreshing(false);
+    toast.success("Données actualisées");
+  };
+
   const sorted = [...absentEmployees].sort((a, b) =>
     `${a.lastName ?? ""} ${a.firstName ?? ""}`.localeCompare(`${b.lastName ?? ""} ${b.firstName ?? ""}`)
   );
 
   return (
-    <Card className="transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lift">
+    <Card className="relative transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lift">
+      <LoadingBar isLoading={isRefreshing || isLoading} />
       <CardHeader>
         <div className="flex items-start justify-between gap-3">
           <div>
@@ -63,10 +73,10 @@ const AbsentList = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => refetch().then(() => toast.success("Données actualisées"))}
-            disabled={isLoading || isFetching}
+            onClick={handleRefresh}
+            disabled={isLoading || isRefreshing}
           >
-            <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+            <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? "animate-spin" : ""}`} />
             Actualiser
           </Button>
         </div>
