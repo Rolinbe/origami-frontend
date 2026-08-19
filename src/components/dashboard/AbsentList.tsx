@@ -2,7 +2,8 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { UserX } from "lucide-react";
+import { RefreshCw, UserX } from "lucide-react";
+import { toast } from "sonner";
 import apiService from "@/services/api.service";
 
 interface AbsentEmployee {
@@ -62,9 +63,10 @@ const AbsentList = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => refetch()}
+            onClick={() => refetch().then(() => toast.success("Données actualisées"))}
             disabled={isLoading || isFetching}
           >
+            <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
             Actualiser
           </Button>
         </div>

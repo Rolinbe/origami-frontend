@@ -3,7 +3,8 @@ import { format } from "date-fns";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Activity, CreditCard, LogIn, LogOut, UserPlus } from "lucide-react";
+import { Activity, CreditCard, LogIn, LogOut, RefreshCw, UserPlus } from "lucide-react";
+import { toast } from "sonner";
 import apiService from "@/services/api.service";
 
 interface ScanLog {
@@ -166,9 +167,10 @@ const LiveActivityFeed = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => refetch()}
+              onClick={() => refetch().then(() => toast.success("Données actualisées"))}
               disabled={isLoading || isFetching}
             >
+              <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
               Actualiser
             </Button>
           </div>

@@ -4,7 +4,8 @@ import { differenceInMinutes, isSameDay, parseISO } from "date-fns";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Clock } from "lucide-react";
+import { Clock, RefreshCw } from "lucide-react";
+import { toast } from "sonner";
 import { useAttendanceSettings } from "@/contexts/AttendanceSettingsContext";
 import apiService from "@/services/api.service";
 import { formatTimeFr } from "@/utils/dateFormat";
@@ -138,9 +139,10 @@ const LateEmployees = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => refetch()}
+            onClick={() => refetch().then(() => toast.success("Données actualisées"))}
             disabled={isLoading || isFetching}
           >
+            <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
             Actualiser
           </Button>
         </div>
