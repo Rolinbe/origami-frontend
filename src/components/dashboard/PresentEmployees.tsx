@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { RefreshCw, UserCheck } from "lucide-react";
+import { Clock, RefreshCw, UserCheck } from "lucide-react";
 import { toast } from "sonner";
 import apiService from "@/services/api.service";
 import { LoadingBar } from "@/components/LoadingBar";
@@ -12,6 +12,7 @@ interface PresentEmployee {
   id: string;
   checkInTime: string;
   checkOutTime: string | null;
+  status: "present" | "late";
   user: {
     id: string;
     firstName: string;
@@ -140,7 +141,14 @@ const PresentEmployees = () => {
                   </div>
                 </div>
                 <div className="shrink-0 text-right">
-                  <Badge className="bg-success/10 text-success hover:bg-success/10">Présent</Badge>
+                  {record.status === "late" ? (
+                    <Badge variant="destructive" className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      En retard
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-success/10 text-success hover:bg-success/10">Présent</Badge>
+                  )}
                   {record.checkInTime && (
                     <p className="mt-1 text-xs text-muted-foreground">Entrée {record.checkInTime}</p>
                   )}
