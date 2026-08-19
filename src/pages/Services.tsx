@@ -9,6 +9,7 @@ import { ServiceDialog } from "../components/services/ServiceDialog";
 import serviceService from "../services/service.service";
 import { Service, ServiceFormData } from "../types/service.types";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 const Services = () => {
   const [services, setServices] = useState<Service[]>([]);
@@ -16,6 +17,8 @@ const Services = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingService, setEditingService] = useState<Service | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [deactivateTarget, setDeactivateTarget] = useState<string | null>(null);
 
   // Charger les services au montage du composant
   useEffect(() => {
@@ -47,19 +50,24 @@ const Services = () => {
   };
 
   const handleDelete = async (serviceId: string) => {
-    if (confirm("Êtes-vous sûr de vouloir désactiver ce département ?")) {
-      try {
-        await serviceService.deleteService(serviceId);
-        setServices(
-          services.map((s) =>
-            s.id === serviceId ? { ...s, isActive: false } : s
-          )
-        );
-        toast.success("Département désactivé avec succès");
-      } catch (error) {
-        console.error("Erreur lors de la supprimer du service:", error);
-        toast.error("Impossible de supprimer le département");
-      }
+    setDeactivateTarget(serviceId);
+  };
+
+  const confirmDeactivate = async () => {
+    if (!deactivateTarget) return;
+    try {
+      await serviceService.deleteService(deactivateTarget);
+      setServices(
+        services.map((s) =>
+          s.id === deactivateTarget ? { ...s, isActive: false } : s
+        )
+      );
+      toast.success("Département désactivé avec succès");
+    } catch (error) {
+      console.error("Erreur lors de la supprimer du service:", error);
+      toast.error("Impossible de supprimer le département");
+    } finally {
+      setDeactivateTarget(null);
     }
   };
 
@@ -187,6 +195,16 @@ const Services = () => {
         onOpenChange={setIsDialogOpen}
         service={editingService}
         onSubmit={handleSubmit}
+      />
+
+      <ConfirmDialog
+        open={deactivateTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeactivateTarget(null); }}
+        title="Désactiver ce département"
+        description="Êtes-vous sûr de vouloir désactiver ce département ? Les employés associés ne seront plus liés à ce service."
+        confirmLabel="Désactiver"
+        variant="warning"
+        onConfirm={confirmDeactivate}
       />
     </div>
   );

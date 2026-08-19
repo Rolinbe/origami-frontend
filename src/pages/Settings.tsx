@@ -10,6 +10,7 @@ import { CalendarDays, Plus, Trash2, Settings } from "lucide-react";
 import { toast } from "sonner";
 import settingsService, { AttendanceSettings } from "@/services/settings.service";
 import holidayService, { Holiday } from "@/services/holiday.service";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 const DEFAULT_BACKEND_SETTINGS: AttendanceSettings = {
   workStartTime: "08:00",
@@ -30,6 +31,8 @@ const SettingsPage = () => {
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [newHoliday, setNewHoliday] = useState({ date: "", label: "" });
   const [isSavingHoliday, setIsSavingHoliday] = useState(false);
+
+  const [deleteHolidayTarget, setDeleteHolidayTarget] = useState<string | null>(null);
 
   useEffect(() => {
     const load = async () => {
@@ -123,14 +126,20 @@ const SettingsPage = () => {
   };
 
   const handleDeleteHoliday = async (id: string) => {
-    if (!confirm("Supprimer ce jour férié ?")) return;
+    setDeleteHolidayTarget(id);
+  };
+
+  const confirmDeleteHoliday = async () => {
+    if (!deleteHolidayTarget) return;
     try {
-      await holidayService.deleteHoliday(id);
-      setHolidays((prev) => prev.filter((h) => h.id !== id));
+      await holidayService.deleteHoliday(deleteHolidayTarget);
+      setHolidays((prev) => prev.filter((h) => h.id !== deleteHolidayTarget));
       toast.success("Jour férié supprimé");
     } catch (error) {
       console.error("Erreur suppression jour férié:", error);
       toast.error("Impossible de supprimer ce jour férié");
+    } finally {
+      setDeleteHolidayTarget(null);
     }
   };
 
@@ -308,6 +317,16 @@ const SettingsPage = () => {
           </div>
         </main>
       </div>
+
+      <ConfirmDialog
+        open={deleteHolidayTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeleteHolidayTarget(null); }}
+        title="Supprimer ce jour férié"
+        description="Êtes-vous sûr de vouloir supprimer ce jour férié ? Cette action est irréversible."
+        confirmLabel="Supprimer"
+        variant="danger"
+        onConfirm={confirmDeleteHoliday}
+      />
     </div>
   );
 };

@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Sidebar } from "@/components/sidebar/Sidebar";
 import { toast } from "sonner";
 import apiService from "@/services/api.service";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 // Import des composants
 import { EmployeeStatsCard } from "@/components/employees/EmployeeStatsCard";
@@ -49,6 +50,9 @@ const Employees: React.FC = () => {
   const [isDetailsOpen, setIsDetailsOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  const [deactivateTarget, setDeactivateTarget] = useState<string | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<string | null>(null);
 
   const itemsPerPage = 10;
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -240,46 +244,43 @@ const Employees: React.FC = () => {
   };
 
   const handleDeactivate = async (id: string): Promise<void> => {
-    if (!confirm("Êtes-vous sûr de vouloir désactiver cet employé ?")) return;
+    setDeactivateTarget(id);
+  };
 
+  const confirmDeactivate = async () => {
+    if (!deactivateTarget) return;
     try {
       setIsSubmitting(true);
-      const updatedEmployee = await employeeService.deactivateEmployee(id);
-
-      // Mettre à jour l'employé dans la liste
-      setEmployees(employees.map((e) => (e.id === id ? updatedEmployee : e)));
-
+      const updatedEmployee = await employeeService.deactivateEmployee(deactivateTarget);
+      setEmployees(employees.map((e) => (e.id === deactivateTarget ? updatedEmployee : e)));
       toast.success("Employé désactivé avec succès");
     } catch (error) {
       console.error("Erreur lors de la désactivation de l'employé:", error);
       toast.error("Impossible de désactiver cet employé");
     } finally {
       setIsSubmitting(false);
+      setDeactivateTarget(null);
     }
   };
 
   const handleDelete = async (id: string): Promise<void> => {
-    if (
-      !confirm(
-        "Êtes-vous sûr de vouloir supprimer cet employé ? Cette action est irréversible."
-      )
-    )
-      return;
+    setDeleteTarget(id);
+  };
 
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
     try {
       setIsSubmitting(true);
-      await employeeService.deleteEmployee(id);
-
-      // Mettre à jour la liste
-      setEmployees(employees.filter((e) => e.id !== id));
+      await employeeService.deleteEmployee(deleteTarget);
+      setEmployees(employees.filter((e) => e.id !== deleteTarget));
       setTotalEmployees(totalEmployees - 1);
-
       toast.success("Employé supprimé avec succès");
     } catch (error) {
       console.error("Erreur lors de la suppression de l'employé:", error);
       toast.error("Impossible de supprimer cet employé");
     } finally {
       setIsSubmitting(false);
+      setDeleteTarget(null);
     }
   };
 
@@ -422,6 +423,28 @@ const Employees: React.FC = () => {
         services={services}
         open={isDetailsOpen}
         onOpenChange={setIsDetailsOpen}
+      />
+
+      <ConfirmDialog
+        open={deactivateTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeactivateTarget(null); }}
+        title="Désactiver cet employé"
+        description="Êtes-vous sûr de vouloir désactiver cet employé ? Il n'aura plus accès au système."
+        confirmLabel="Désactiver"
+        variant="warning"
+        onConfirm={confirmDeactivate}
+        isLoading={isSubmitting}
+      />
+
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        onOpenChange={(open) => { if (!open) setDeleteTarget(null); }}
+        title="Supprimer cet employé"
+        description="Êtes-vous sûr de vouloir supprimer cet employé ? Cette action est irréversible et toutes les données associées seront perdues."
+        confirmLabel="Supprimer"
+        variant="danger"
+        onConfirm={confirmDelete}
+        isLoading={isSubmitting}
       />
     </div>
   );

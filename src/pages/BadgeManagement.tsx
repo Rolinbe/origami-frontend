@@ -10,6 +10,8 @@ import { BadgeFilters } from "@/components/badges/BadgeFilters";
 import { BadgeCard } from "@/components/badges/BadgeCard";
 import { BadgeDetailModal } from "@/components/badges/BadgeDetailModal";
 import { CreateBadgeModal } from "@/components/badges/CreateBadgeModal";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { RevokeBadgeDialog } from "@/components/RevokeBadgeDialog";
 import {
   Badge,
   BadgeFilters as BadgeFiltersType,
@@ -34,6 +36,9 @@ const BadgeManagement: React.FC = () => {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const [revokeTarget, setRevokeTarget] = useState<Badge | null>(null);
+  const [reactivateTarget, setReactivateTarget] = useState<Badge | null>(null);
 
   // Charger les services au montage du composant
   useEffect(() => {
@@ -131,44 +136,42 @@ const BadgeManagement: React.FC = () => {
   };
 
   const handleRevokeBadge = async (badge: Badge) => {
-    const reason = prompt("Veuillez indiquer la raison de la révocation:");
-    if (!reason) return;
+    setRevokeTarget(badge);
+  };
 
+  const confirmRevokeBadge = async (reason: string) => {
+    if (!revokeTarget) return;
     try {
       setIsSubmitting(true);
-      const updatedBadge = await badgeService.revokeBadge(
-        badge.badgeId,
-        reason
-      );
-
-      // Mettre à jour le badge dans la liste
-      setBadges(badges.map((b) => (b.id === badge.id ? updatedBadge : b)));
-
+      const updatedBadge = await badgeService.revokeBadge(revokeTarget.badgeId, reason);
+      setBadges(badges.map((b) => (b.id === revokeTarget.id ? updatedBadge : b)));
       toast.success("Badge révoqué avec succès");
     } catch (error) {
       console.error("Erreur lors de la révocation du badge:", error);
       toast.error("Impossible de révoquer ce badge");
     } finally {
       setIsSubmitting(false);
+      setRevokeTarget(null);
     }
   };
 
   const handleReactivateBadge = async (badge: Badge) => {
-    if (!confirm("Voulez-vous réactiver ce badge ?")) return;
+    setReactivateTarget(badge);
+  };
 
+  const confirmReactivateBadge = async () => {
+    if (!reactivateTarget) return;
     try {
       setIsSubmitting(true);
-      const updatedBadge = await badgeService.reactivateBadge(badge.badgeId);
-
-      // Mettre à jour le badge dans la liste
-      setBadges(badges.map((b) => (b.id === badge.id ? updatedBadge : b)));
-
+      const updatedBadge = await badgeService.reactivateBadge(reactivateTarget.badgeId);
+      setBadges(badges.map((b) => (b.id === reactivateTarget.id ? updatedBadge : b)));
       toast.success("Badge réactivé avec succès");
     } catch (error) {
       console.error("Erreur lors de la réactivation du badge:", error);
       toast.error("Impossible de réactiver ce badge");
     } finally {
       setIsSubmitting(false);
+      setReactivateTarget(null);
     }
   };
 
@@ -302,6 +305,25 @@ const BadgeManagement: React.FC = () => {
           isSubmitting={isSubmitting}
         />
       )}
+
+      <RevokeBadgeDialog
+        open={revokeTarget !== null}
+        onOpenChange={(open) => { if (!open) setRevokeTarget(null); }}
+        badgeLabel={revokeTarget?.badgeId ?? ""}
+        onConfirm={confirmRevokeBadge}
+        isLoading={isSubmitting}
+      />
+
+      <ConfirmDialog
+        open={reactivateTarget !== null}
+        onOpenChange={(open) => { if (!open) setReactivateTarget(null); }}
+        title="Réactiver ce badge"
+        description={`Voulez-vous réactiver le badge ${reactivateTarget?.badgeId ?? ""} ? L'employé pourra de nouveau l'utiliser.`}
+        confirmLabel="Réactiver"
+        variant="info"
+        onConfirm={confirmReactivateBadge}
+        isLoading={isSubmitting}
+      />
     </div>
   );
 };
