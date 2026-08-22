@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { Plus, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/PageHeader";
-import { Sidebar } from "@/components/sidebar/Sidebar";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { ServiceStats } from "../components/services/ServiceStats";
 import { ServiceGrid } from "../components/services/ServiceGrid";
 import { ServiceDialog } from "../components/services/ServiceDialog";
@@ -137,56 +137,49 @@ const Services = () => {
   const inactiveServices = services.filter((s) => !s.isActive);
 
   return (
-    <div className="min-h-screen bg-app flex">
-      <Sidebar />
+    <AppLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <PageHeader
+          icon={Building2}
+          title="Départements"
+          description="Gérez les départements de votre entreprise"
+          actions={
+            <Button
+              onClick={handleCreate}
+              className="bg-primary hover:bg-primary/90"
+              disabled={isLoading}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Nouveau département
+            </Button>
+          }
+        />
 
-      {/* Ajout de ml-64 et h-screen overflow-auto */}
-      <div className="flex-1 ml-64 overflow-auto h-screen">
-        <main className="container mx-auto px-4 py-8 animate-fade-in-up">
-          <div className="space-y-6">
-            {/* Header */}
-            <PageHeader
-              icon={Building2}
-              title="Départements"
-              description="Gérez les départements de votre entreprise"
-              actions={
-                <Button
-                  onClick={handleCreate}
-                  className="bg-primary hover:bg-primary/90"
-                  disabled={isLoading}
-                >
-                  <Plus className="mr-2 h-4 w-4" />
-                  Nouveau département
-                </Button>
-              }
-            />
+        {/* Stats */}
+        <ServiceStats
+          total={services.length}
+          active={activeServices.length}
+          inactive={inactiveServices.length}
+        />
 
-            {/* Stats */}
-            <ServiceStats
-              total={services.length}
-              active={activeServices.length}
-              inactive={inactiveServices.length}
-            />
+        {/* Active Services */}
+        <ServiceGrid
+          services={activeServices}
+          title="Départements actifs"
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onToggleActive={handleToggleActive}
+        />
 
-            {/* Active Services */}
-            <ServiceGrid
-              services={activeServices}
-              title="Départements actifs"
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onToggleActive={handleToggleActive}
-            />
-
-            {/* Inactive Services */}
-            <ServiceGrid
-              services={inactiveServices}
-              title="Départements inactifs"
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onToggleActive={handleToggleActive}
-            />
-          </div>
-        </main>
+        {/* Inactive Services */}
+        <ServiceGrid
+          services={inactiveServices}
+          title="Départements inactifs"
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+          onToggleActive={handleToggleActive}
+        />
       </div>
 
       {/* Dialog */}
@@ -206,7 +199,7 @@ const Services = () => {
         variant="warning"
         onConfirm={confirmDeactivate}
       />
-    </div>
+    </AppLayout>
   );
 };
 

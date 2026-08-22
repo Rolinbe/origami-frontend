@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useAttendanceSettings } from "@/contexts/AttendanceSettingsContext";
 import { PageHeader } from "@/components/PageHeader";
-import { Sidebar } from "@/components/sidebar/Sidebar";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { CalendarDays, Plus, Trash2, Settings } from "lucide-react";
 import { toast } from "sonner";
 import settingsService, { AttendanceSettings } from "@/services/settings.service";
@@ -149,173 +149,168 @@ const SettingsPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-app flex">
-      <Sidebar />
-      <div className="flex-1 ml-64 overflow-auto h-screen">
-        <main className="container mx-auto px-4 py-8 animate-fade-in-up">
-          <div className="max-w-4xl space-y-6">
-            <PageHeader
-              icon={Settings}
-              title="Paramètres"
-              description="Configurez les horaires de travail, les seuils de retard et les jours fériés."
-            />
+    <AppLayout>
+      <div className="max-w-4xl space-y-6">
+        <PageHeader
+          icon={Settings}
+          title="Paramètres"
+          description="Configurez les horaires de travail, les seuils de retard et les jours fériés."
+        />
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Horaires de référence</CardTitle>
-                <CardDescription>
-                  Ces valeurs sont utilisées pour calculer les retards et le pointage.
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <form className="space-y-8" onSubmit={handleSubmit}>
-                  <div className="grid gap-6 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label>Début de travail</Label>
-                      <Input
-                        type="time"
-                        value={formState.workStartTime}
-                        onChange={(e) => handleChange("workStartTime")(e.currentTarget.value)}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Fin de travail</Label>
-                      <Input
-                        type="time"
-                        value={formState.workEndTime}
-                        onChange={(e) => handleChange("workEndTime")(e.currentTarget.value)}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Début matinée</Label>
-                      <Input
-                        type="time"
-                        value={formState.morningStart}
-                        onChange={(e) => handleChange("morningStart")(e.currentTarget.value)}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Fin matinée</Label>
-                      <Input
-                        type="time"
-                        value={formState.morningEnd}
-                        onChange={(e) => handleChange("morningEnd")(e.currentTarget.value)}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Début après-midi</Label>
-                      <Input
-                        type="time"
-                        value={formState.afternoonStart}
-                        onChange={(e) => handleChange("afternoonStart")(e.currentTarget.value)}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Fin après-midi</Label>
-                      <Input
-                        type="time"
-                        value={formState.afternoonEnd}
-                        onChange={(e) => handleChange("afternoonEnd")(e.currentTarget.value)}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Tolérance de retard (minutes)</Label>
-                      <Input
-                        type="number"
-                        min={0}
-                        value={formState.lateToleranceMinutes}
-                        onChange={(e) =>
-                          handleChange("lateToleranceMinutes")(e.currentTarget.value)
-                        }
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className="flex flex-wrap items-center gap-3">
-                    <Button type="submit" disabled={isSaving || isLoading}>
-                      {isSaving ? "Enregistrement…" : "Enregistrer"}
-                    </Button>
-                    <Button type="button" variant="outline" onClick={handleReset}>
-                      Réinitialiser par défaut
-                    </Button>
-                  </div>
-                </form>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <CalendarDays className="h-5 w-5" />
-                  Jours fériés
-                </CardTitle>
-                <CardDescription>
-                  Les jours fériés configurés ne sont pas comptabilisés dans les absences.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <form onSubmit={handleAddHoliday} className="flex flex-wrap gap-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Horaires de référence</CardTitle>
+            <CardDescription>
+              Ces valeurs sont utilisées pour calculer les retards et le pointage.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <form className="space-y-8" onSubmit={handleSubmit}>
+              <div className="grid gap-6 grid-cols-1 sm:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Début de travail</Label>
                   <Input
-                    type="date"
-                    className="w-auto"
-                    value={newHoliday.date}
-                    onChange={(e) => {
-                      const { value } = e.currentTarget;
-                      setNewHoliday((prev) => ({ ...prev, date: value }));
-                    }}
+                    type="time"
+                    value={formState.workStartTime}
+                    onChange={(e) => handleChange("workStartTime")(e.currentTarget.value)}
                     required
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label>Fin de travail</Label>
                   <Input
-                    placeholder="Libellé (ex: Fête de l'Indépendance)"
-                    className="flex-1 min-w-[200px]"
-                    value={newHoliday.label}
-                    onChange={(e) => {
-                      const { value } = e.currentTarget;
-                      setNewHoliday((prev) => ({ ...prev, label: value }));
-                    }}
+                    type="time"
+                    value={formState.workEndTime}
+                    onChange={(e) => handleChange("workEndTime")(e.currentTarget.value)}
                     required
                   />
-                  <Button type="submit" disabled={isSavingHoliday}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Ajouter
-                  </Button>
-                </form>
+                </div>
+                <div className="space-y-2">
+                  <Label>Début matinée</Label>
+                  <Input
+                    type="time"
+                    value={formState.morningStart}
+                    onChange={(e) => handleChange("morningStart")(e.currentTarget.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Fin matinée</Label>
+                  <Input
+                    type="time"
+                    value={formState.morningEnd}
+                    onChange={(e) => handleChange("morningEnd")(e.currentTarget.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Début après-midi</Label>
+                  <Input
+                    type="time"
+                    value={formState.afternoonStart}
+                    onChange={(e) => handleChange("afternoonStart")(e.currentTarget.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Fin après-midi</Label>
+                  <Input
+                    type="time"
+                    value={formState.afternoonEnd}
+                    onChange={(e) => handleChange("afternoonEnd")(e.currentTarget.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Tolérance de retard (minutes)</Label>
+                  <Input
+                    type="number"
+                    min={0}
+                    value={formState.lateToleranceMinutes}
+                    onChange={(e) =>
+                      handleChange("lateToleranceMinutes")(e.currentTarget.value)
+                    }
+                    required
+                  />
+                </div>
+              </div>
 
-                {holidays.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">Aucun jour férié configuré.</p>
-                ) : (
-                  <div className="rounded-md border divide-y">
-                    {holidays.map((holiday) => (
-                      <div
-                        key={holiday.id}
-                        className="flex items-center justify-between px-4 py-2.5"
-                      >
-                        <div>
-                          <p className="font-medium text-sm">{holiday.label}</p>
-                          <p className="text-xs text-muted-foreground">{formatDate(holiday.date)}</p>
-                        </div>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleDeleteHoliday(holiday.id)}
-                        >
-                          <Trash2 className="h-4 w-4 text-destructive" />
-                        </Button>
-                      </div>
-                    ))}
+              <div className="flex flex-wrap items-center gap-3">
+                <Button type="submit" disabled={isSaving || isLoading}>
+                  {isSaving ? "Enregistrement…" : "Enregistrer"}
+                </Button>
+                <Button type="button" variant="outline" onClick={handleReset}>
+                  Réinitialiser par défaut
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <CalendarDays className="h-5 w-5" />
+              Jours fériés
+            </CardTitle>
+            <CardDescription>
+              Les jours fériés configurés ne sont pas comptabilisés dans les absences.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <form onSubmit={handleAddHoliday} className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+              <Input
+                type="date"
+                className="sm:w-auto"
+                value={newHoliday.date}
+                onChange={(e) => {
+                  const { value } = e.currentTarget;
+                  setNewHoliday((prev) => ({ ...prev, date: value }));
+                }}
+                required
+              />
+              <Input
+                placeholder="Libellé (ex: Fête de l'Indépendance)"
+                className="flex-1 min-w-0 sm:min-w-[200px]"
+                value={newHoliday.label}
+                onChange={(e) => {
+                  const { value } = e.currentTarget;
+                  setNewHoliday((prev) => ({ ...prev, label: value }));
+                }}
+                required
+              />
+              <Button type="submit" disabled={isSavingHoliday}>
+                <Plus className="mr-2 h-4 w-4" />
+                Ajouter
+              </Button>
+            </form>
+
+            {holidays.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Aucun jour férié configuré.</p>
+            ) : (
+              <div className="rounded-md border divide-y">
+                {holidays.map((holiday) => (
+                  <div
+                    key={holiday.id}
+                    className="flex items-center justify-between gap-3 px-4 py-2.5"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate font-medium text-sm">{holiday.label}</p>
+                      <p className="text-xs text-muted-foreground">{formatDate(holiday.date)}</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleDeleteHoliday(holiday.id)}
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </main>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
       <ConfirmDialog
@@ -327,7 +322,7 @@ const SettingsPage = () => {
         variant="danger"
         onConfirm={confirmDeleteHoliday}
       />
-    </div>
+    </AppLayout>
   );
 };
 

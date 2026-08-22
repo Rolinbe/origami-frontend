@@ -18,7 +18,8 @@ import { NavGroup } from "./NavGroup";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import logo from "@/assets/icons/logo.png";
 
-export const Sidebar = () => {
+/** Contenu de la sidebar, réutilisé sur desktop (aside fixe) et mobile (drawer) */
+export const SidebarContent = () => {
   const { logout } = useAuthContext();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -32,7 +33,7 @@ export const Sidebar = () => {
   };
 
   return (
-    <aside className="fixed left-0 top-0 z-30 flex h-screen w-64 flex-col overflow-hidden bg-[#0b1220] text-slate-100">
+    <>
       {/* Décor : halo indigo + trame de fond */}
       <div className="pointer-events-none absolute inset-0">
         <div className="absolute -top-28 right-[-5rem] h-72 w-72 rounded-full bg-indigo-600/30 blur-3xl" />
@@ -69,7 +70,7 @@ export const Sidebar = () => {
       </nav>
 
       {/* Footer - Fixed at bottom */}
-      <div className="relative shrink-0 space-y-3 border-t border-white/10 p-3">
+      <div className="relative shrink-0 space-y-3 border-t border-white/10 p-3 pb-safe">
         <div className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 backdrop-blur-sm">
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping-slow rounded-full bg-emerald-400" />
@@ -97,7 +98,7 @@ export const Sidebar = () => {
                 {isLoggingOut ? "Déconnexion..." : "Déconnexion"}
               </Button>
             </AlertDialogTrigger>
-          <AlertDialogContent>
+          <AlertDialogContent className="w-[calc(100vw-2rem)] max-w-md">
             <AlertDialogHeader>
               <AlertDialogTitle>Confirmer la déconnexion</AlertDialogTitle>
               <AlertDialogDescription>
@@ -115,6 +116,14 @@ export const Sidebar = () => {
         </AlertDialog>
         </div>
       </div>
+    </>
+  );
+};
+
+export const Sidebar = () => {
+  return (
+    <aside className="fixed left-0 top-0 z-30 hidden h-screen w-64 flex-col overflow-hidden bg-[#0b1220] text-slate-100 lg:flex">
+      <SidebarContent />
     </aside>
   );
 };

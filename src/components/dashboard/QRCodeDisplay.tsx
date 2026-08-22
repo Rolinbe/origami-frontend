@@ -46,13 +46,13 @@ const QRCodeDisplay = () => {
           Les employés doivent scanner ce code pour pointer
         </CardDescription>
       </CardHeader>
-      <CardContent className="h-96 flex flex-col items-center space-y-4">
+      <CardContent className="flex min-h-72 flex-col items-center space-y-4 sm:h-96">
         {qrCodeUrl ? (
-          <div className="p-4 bg-white rounded-lg">
-            <img src={qrCodeUrl} alt="QR Code" className="w-64 h-64" />
+          <div className="w-full max-w-64 p-4 bg-white rounded-lg">
+            <img src={qrCodeUrl} alt="QR Code" className="aspect-square w-full h-auto" />
           </div>
         ) : (
-          <div className="w-64 h-64 bg-muted rounded-lg animate-pulse" />
+          <div className="aspect-square w-full max-w-64 bg-muted rounded-lg animate-pulse" />
         )}
         <Button
           onClick={generateNewQRCode}

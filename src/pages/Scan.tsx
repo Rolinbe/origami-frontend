@@ -1,7 +1,7 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import jsQR from "jsqr";
 import { ScanBarcode, Camera, Keyboard, CheckCircle2, XCircle } from "lucide-react";
-import { Sidebar } from "@/components/sidebar/Sidebar";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -271,181 +271,176 @@ const Scan = () => {
   };
 
   return (
-    <div className="min-h-screen bg-app flex">
-      <Sidebar />
-      <div className="flex-1 ml-64 overflow-auto h-screen">
-        <main className="container mx-auto px-4 py-8 space-y-6 animate-fade-in-up">
-          <PageHeader
-            icon={ScanBarcode}
-            title="Poste de pointage"
-            description="Scannez le badge QR code d'un employé pour enregistrer son entrée ou sa sortie."
-          />
+    <AppLayout>
+      <PageHeader
+        icon={ScanBarcode}
+        title="Poste de pointage"
+        description="Scannez le badge QR code d'un employé pour enregistrer son entrée ou sa sortie."
+      />
 
-          <div className="grid gap-6 lg:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Scanner le badge</CardTitle>
-                <CardDescription>
-                  Choisissez le type de pointage puis scannez ou saisissez le badge.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex rounded-lg border p-1 w-fit">
-                  <button
-                    type="button"
-                    onClick={() => toggleScanType("check_in")}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                      scanType === "check_in"
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:bg-muted"
-                    }`}
+      <div className="grid gap-6 lg:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Scanner le badge</CardTitle>
+            <CardDescription>
+              Choisissez le type de pointage puis scannez ou saisissez le badge.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex rounded-lg border p-1 w-fit">
+              <button
+                type="button"
+                onClick={() => toggleScanType("check_in")}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  scanType === "check_in"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                Entrée
+              </button>
+              <button
+                type="button"
+                onClick={() => toggleScanType("check_out")}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  scanType === "check_out"
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                Sortie
+              </button>
+            </div>
+
+            <div className={`relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-slate-950 ${scanning ? "" : "hidden"}`}>
+              <video
+                ref={videoRef}
+                autoPlay
+                muted
+                playsInline
+                className={`h-full w-full object-contain ${scanning ? "" : "hidden"}`}
+              />
+
+              {scanning && (
+                <div className="pointer-events-none absolute inset-0">
+                  <div
+                    className="absolute left-1/2 top-1/2 h-52 w-52 -translate-x-1/2 -translate-y-1/2 sm:h-60 sm:w-60"
+                    style={{ boxShadow: "0 0 0 9999px rgba(0,0,0,0.45)" }}
                   >
-                    Entrée
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => toggleScanType("check_out")}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                      scanType === "check_out"
-                        ? "bg-primary text-primary-foreground"
-                        : "text-muted-foreground hover:bg-muted"
-                    }`}
-                  >
-                    Sortie
-                  </button>
+                    <span className="absolute -left-1 -top-1 h-9 w-9 rounded-tl-lg border-l-4 border-t-4 border-emerald-400" />
+                    <span className="absolute -right-1 -top-1 h-9 w-9 rounded-tr-lg border-r-4 border-t-4 border-emerald-400" />
+                    <span className="absolute -bottom-1 -left-1 h-9 w-9 rounded-bl-lg border-b-4 border-l-4 border-emerald-400" />
+                    <span className="absolute -bottom-1 -right-1 h-9 w-9 rounded-br-lg border-b-4 border-r-4 border-emerald-400" />
+                    <div
+                      className="scan-line absolute left-1 right-1 h-0.5 rounded-full bg-gradient-to-r from-transparent via-emerald-400 to-transparent"
+                      style={{ boxShadow: "0 0 14px 2px rgba(52,211,153,0.7)" }}
+                    />
+                  </div>
+
+                  <div className="absolute bottom-3 left-0 right-0 flex justify-center px-3">
+                    <span className="inline-flex items-center gap-2 rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-emerald-300 backdrop-blur">
+                      <span className="relative flex h-2 w-2">
+                        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+                        <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+                      </span>
+                      Scannez le badge QR dans le cadre
+                    </span>
+                  </div>
                 </div>
+              )}
+            </div>
 
-                <div className={`relative aspect-[4/3] w-full overflow-hidden rounded-xl bg-slate-950 ${scanning ? "" : "hidden"}`}>
-                  <video
-                    ref={videoRef}
-                    autoPlay
-                    muted
-                    playsInline
-                    className={`h-full w-full object-contain ${scanning ? "" : "hidden"}`}
-                  />
+            <div className="flex flex-wrap gap-3">
+              <Button
+                variant={scanning ? "outline" : "default"}
+                onClick={scanning ? stopCamera : startCamera}
+              >
+                <Camera className="mr-2 h-4 w-4" />
+                {scanning ? "Désactiver la caméra" : "Activer la caméra"}
+              </Button>
+            </div>
 
-                  {scanning && (
-                    <div className="pointer-events-none absolute inset-0">
-                      <div
-                        className="absolute left-1/2 top-1/2 h-52 w-52 -translate-x-1/2 -translate-y-1/2 sm:h-60 sm:w-60"
-                        style={{ boxShadow: "0 0 0 9999px rgba(0,0,0,0.45)" }}
-                      >
-                        <span className="absolute -left-1 -top-1 h-9 w-9 rounded-tl-lg border-l-4 border-t-4 border-emerald-400" />
-                        <span className="absolute -right-1 -top-1 h-9 w-9 rounded-tr-lg border-r-4 border-t-4 border-emerald-400" />
-                        <span className="absolute -bottom-1 -left-1 h-9 w-9 rounded-bl-lg border-b-4 border-l-4 border-emerald-400" />
-                        <span className="absolute -bottom-1 -right-1 h-9 w-9 rounded-br-lg border-b-4 border-r-4 border-emerald-400" />
-                        <div
-                          className="scan-line absolute left-1 right-1 h-0.5 rounded-full bg-gradient-to-r from-transparent via-emerald-400 to-transparent"
-                          style={{ boxShadow: "0 0 14px 2px rgba(52,211,153,0.7)" }}
-                        />
-                      </div>
+            {cameraError && (
+              <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
+                {cameraError}
+              </div>
+            )}
 
-                      <div className="absolute bottom-3 left-0 right-0 flex justify-center">
-                        <span className="inline-flex items-center gap-2 rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-emerald-300 backdrop-blur">
-                          <span className="relative flex h-2 w-2">
-                            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-                            <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
-                          </span>
-                          Scannez le badge QR dans le cadre
-                        </span>
-                      </div>
-                    </div>
-                  )}
+            <div className="flex items-center gap-2 pt-2">
+              <Keyboard className="h-4 w-4 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground">Saisie manuelle</span>
+            </div>
+            <form onSubmit={handleManualSubmit} className="flex flex-col gap-2 sm:flex-row">
+              <Input
+                value={manualCode}
+                onChange={(event) => setManualCode(event.currentTarget.value)}
+                placeholder="ID du badge ou contenu du QR code"
+              />
+              <Button type="submit" disabled={!manualCode.trim() || isProcessing}>
+                Pointer
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Confirmation</CardTitle>
+            <CardDescription>Résultat du dernier scan</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {!result ? (
+              <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
+                <ScanBarcode className="h-12 w-12 mb-3 opacity-40" />
+                <p className="text-sm">En attente d'un scan…</p>
+              </div>
+            ) : result.success ? (
+              <div className="rounded-lg border border-success/30 bg-success/10 p-4">
+                <div className="flex items-center gap-2 text-success">
+                  <CheckCircle2 className="h-5 w-5" />
+                  <p className="font-medium">{result.message}</p>
                 </div>
-
-                <div className="flex flex-wrap gap-3">
-                  <Button
-                    variant={scanning ? "outline" : "default"}
-                    onClick={scanning ? stopCamera : startCamera}
-                  >
-                    <Camera className="mr-2 h-4 w-4" />
-                    {scanning ? "Désactiver la caméra" : "Activer la caméra"}
-                  </Button>
-                </div>
-
-                {cameraError && (
-                  <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive">
-                    {cameraError}
+                {result.user && (
+                  <div className="mt-3 text-sm">
+                    <p className="font-semibold text-foreground">
+                      {result.user.firstName} {result.user.lastName}
+                    </p>
+                    <p className="text-muted-foreground">
+                      {result.user.service ?? "Non assigné"}
+                      {result.user.employeeType === "intern" ? " · Stagiaire" : ""}
+                    </p>
                   </div>
                 )}
-
-                <div className="flex items-center gap-2 pt-2">
-                  <Keyboard className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">Saisie manuelle</span>
-                </div>
-                <form onSubmit={handleManualSubmit} className="flex gap-2">
-                  <Input
-                    value={manualCode}
-                    onChange={(event) => setManualCode(event.currentTarget.value)}
-                    placeholder="ID du badge ou contenu du QR code"
-                  />
-                  <Button type="submit" disabled={!manualCode.trim() || isProcessing}>
-                    Pointer
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Confirmation</CardTitle>
-                <CardDescription>Résultat du dernier scan</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {!result ? (
-                  <div className="flex flex-col items-center justify-center py-16 text-muted-foreground">
-                    <ScanBarcode className="h-12 w-12 mb-3 opacity-40" />
-                    <p className="text-sm">En attente d'un scan…</p>
-                  </div>
-                ) : result.success ? (
-                  <div className="rounded-lg border border-success/30 bg-success/10 p-4">
-                    <div className="flex items-center gap-2 text-success">
-                      <CheckCircle2 className="h-5 w-5" />
-                      <p className="font-medium">{result.message}</p>
-                    </div>
-                    {result.user && (
-                      <div className="mt-3 text-sm">
-                        <p className="font-semibold text-foreground">
-                          {result.user.firstName} {result.user.lastName}
-                        </p>
-                        <p className="text-muted-foreground">
-                          {result.user.service ?? "Non assigné"}
-                          {result.user.employeeType === "intern" ? " · Stagiaire" : ""}
-                        </p>
-                      </div>
+                {result.attendance && (
+                  <div className="mt-2 text-xs text-muted-foreground space-y-0.5">
+                    <p>Date : {result.attendance.date}</p>
+                    {result.attendance.checkInTime && (
+                      <p>Entrée : {result.attendance.checkInTime}</p>
                     )}
-                    {result.attendance && (
-                      <div className="mt-2 text-xs text-muted-foreground space-y-0.5">
-                        <p>Date : {result.attendance.date}</p>
-                        {result.attendance.checkInTime && (
-                          <p>Entrée : {result.attendance.checkInTime}</p>
-                        )}
-                        {result.attendance.checkOutTime && (
-                          <p>Sortie : {result.attendance.checkOutTime}</p>
-                        )}
-                        {result.attendance.durationText && (
-                          <p>Durée : {result.attendance.durationText}</p>
-                        )}
-                        {result.isLate && (
-                          <p className="text-warning font-medium">⚠ Retard</p>
-                        )}
-                      </div>
+                    {result.attendance.checkOutTime && (
+                      <p>Sortie : {result.attendance.checkOutTime}</p>
                     )}
-                  </div>
-                ) : (
-                  <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4">
-                    <div className="flex items-center gap-2 text-destructive">
-                      <XCircle className="h-5 w-5" />
-                      <p className="font-medium">{result.message}</p>
-                    </div>
+                    {result.attendance.durationText && (
+                      <p>Durée : {result.attendance.durationText}</p>
+                    )}
+                    {result.isLate && (
+                      <p className="text-warning font-medium">⚠ Retard</p>
+                    )}
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          </div>
-        </main>
+              </div>
+            ) : (
+              <div className="rounded-lg border border-destructive/30 bg-destructive/10 p-4">
+                <div className="flex items-center gap-2 text-destructive">
+                  <XCircle className="h-5 w-5" />
+                  <p className="font-medium">{result.message}</p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
-    </div>
+    </AppLayout>
   );
 };
 

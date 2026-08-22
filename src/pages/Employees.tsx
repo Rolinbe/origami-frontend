@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Users, UserCheck, UserX, UserPlus, Building2, Upload, Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { PageHeader } from "@/components/PageHeader";
-import { Sidebar } from "@/components/sidebar/Sidebar";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { toast } from "sonner";
 import apiService from "@/services/api.service";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -311,103 +311,98 @@ const Employees: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-app flex">
-      <Sidebar />
-
-      <div className="flex-1 ml-64 overflow-auto h-screen">
-        <main className="container mx-auto px-4 py-8 animate-fade-in-up">
-          <div className="space-y-6">
-            {/* Header */}
-            <PageHeader
-              icon={Building2}
-              title="Gestion des employés"
-              description="Gérez et suivez tous vos employés"
-              actions={
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="outline" onClick={handleDownloadTemplate}>
-                    <Download className="mr-2 h-4 w-4" />
-                    Modèle CSV
-                  </Button>
-                  <Button variant="outline" onClick={handleImportClick}>
-                    <Upload className="mr-2 h-4 w-4" />
-                    Importer CSV
-                  </Button>
-                  <Button className="bg-primary hover:bg-primary/90" onClick={handleCreateEmployee}>
-                    <UserPlus className="mr-2 h-4 w-4" />
-                    Nouvel employé
-                  </Button>
-                </div>
-              }
-            />
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".csv,text/csv"
-              className="hidden"
-              onChange={handleImportFile}
-            />
-
-            {/* Stats */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4 stagger">
-              <EmployeeStatsCard
-                title="Total Employés"
-                value={stats.total}
-                icon={Users}
-                description="Tous les employés"
-              />
-              <EmployeeStatsCard
-                title="Actifs"
-                value={stats.active}
-                icon={UserCheck}
-                variant="success"
-                description="Employés actifs"
-              />
-              <EmployeeStatsCard
-                title="Inactifs"
-                value={stats.inactive}
-                icon={UserX}
-                variant="destructive"
-                description="En attente de validation"
-              />
-              <EmployeeStatsCard
-                title="Stagiaires"
-                value={stats.interns}
-                icon={Users}
-                variant="warning"
-                description="Contrats temporaires"
-              />
+    <AppLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <PageHeader
+          icon={Building2}
+          title="Gestion des employés"
+          description="Gérez et suivez tous vos employés"
+          actions={
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" size="sm" className="sm:h-10" onClick={handleDownloadTemplate}>
+                <Download className="mr-2 h-4 w-4" />
+                Modèle CSV
+              </Button>
+              <Button variant="outline" size="sm" className="sm:h-10" onClick={handleImportClick}>
+                <Upload className="mr-2 h-4 w-4" />
+                Importer CSV
+              </Button>
+              <Button size="sm" className="h-10 bg-primary hover:bg-primary/90" onClick={handleCreateEmployee}>
+                <UserPlus className="mr-2 h-4 w-4" />
+                Nouvel employé
+              </Button>
             </div>
+          }
+        />
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".csv,text/csv"
+          className="hidden"
+          onChange={handleImportFile}
+        />
 
-            {/* Filtres */}
-            <EmployeeFiltersComponent
-              filters={filters}
-              onFilterChange={handleFilterChange}
-              services={services}
-            />
+        {/* Stats */}
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 stagger">
+          <EmployeeStatsCard
+            title="Total Employés"
+            value={stats.total}
+            icon={Users}
+            description="Tous les employés"
+          />
+          <EmployeeStatsCard
+            title="Actifs"
+            value={stats.active}
+            icon={UserCheck}
+            variant="success"
+            description="Employés actifs"
+          />
+          <EmployeeStatsCard
+            title="Inactifs"
+            value={stats.inactive}
+            icon={UserX}
+            variant="destructive"
+            description="En attente de validation"
+          />
+          <EmployeeStatsCard
+            title="Stagiaires"
+            value={stats.interns}
+            icon={Users}
+            variant="warning"
+            description="Contrats temporaires"
+          />
+        </div>
 
-            {/* Table */}
-            <EmployeeTable
-              employees={employees}
-              services={services}
-              onViewDetails={handleViewDetails}
-              onValidate={handleValidate}
-              onDeactivate={handleDeactivate}
-              onEdit={handleEditEmployee}
-              onDelete={handleDelete}
-              isLoading={isLoading}
-            />
+        {/* Filtres */}
+        <EmployeeFiltersComponent
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          services={services}
+        />
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <Pagination
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-              />
-            )}
-          </div>
-        </main>
+        {/* Table */}
+        <EmployeeTable
+          employees={employees}
+          services={services}
+          onViewDetails={handleViewDetails}
+          onValidate={handleValidate}
+          onDeactivate={handleDeactivate}
+          onEdit={handleEditEmployee}
+          onDelete={handleDelete}
+          isLoading={isLoading}
+        />
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+        )}
       </div>
+
       <EmployeeDialog
         open={isEmployeeDialogOpen}
         onOpenChange={setIsEmployeeDialogOpen}
@@ -446,7 +441,7 @@ const Employees: React.FC = () => {
         onConfirm={confirmDelete}
         isLoading={isSubmitting}
       />
-    </div>
+    </AppLayout>
   );
 };
 

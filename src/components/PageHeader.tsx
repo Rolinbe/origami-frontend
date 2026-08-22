@@ -19,19 +19,19 @@ export const PageHeader = ({
   return (
     <div
       className={cn(
-        "flex flex-wrap items-start justify-between gap-4 animate-fade-in-up",
+        "flex flex-col gap-4 sm:flex-row sm:flex-wrap sm:items-start sm:justify-between animate-fade-in-up",
         className
       )}
     >
-      <div className="flex items-center gap-3.5">
+      <div className="flex items-center gap-3 sm:gap-3.5">
         {Icon && (
-          <div className="group relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-gradient-to-br from-primary via-chart-4 to-chart-5 text-white shadow-lg shadow-primary/25 transition-transform duration-300 hover:-rotate-6 hover:scale-105">
+          <div className="group relative flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-primary via-chart-4 to-chart-5 text-white shadow-lg shadow-primary/25 transition-transform duration-300 hover:-rotate-6 hover:scale-105 sm:h-14 sm:w-14 sm:rounded-2xl">
             <div className="absolute inset-0 animate-gradient-x bg-gradient-to-r from-transparent via-white/20 to-transparent bg-[length:200%_100%]" />
-            <Icon className="relative h-7 w-7" strokeWidth={2.1} />
+            <Icon className="relative h-6 w-6 sm:h-7 sm:w-7" strokeWidth={2.1} />
           </div>
         )}
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-foreground lg:text-3xl">
+        <div className="min-w-0">
+          <h1 className="text-xl font-bold tracking-tight text-foreground sm:text-2xl lg:text-3xl">
             {title}
           </h1>
           {description && (
@@ -39,7 +39,9 @@ export const PageHeader = ({
           )}
         </div>
       </div>
-      {actions && <div className="flex items-center gap-3">{actions}</div>}
+      {actions && (
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">{actions}</div>
+      )}
     </div>
   );
 };

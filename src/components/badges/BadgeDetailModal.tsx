@@ -37,11 +37,11 @@ export const BadgeDetailModal: React.FC<BadgeDetailModalProps> = ({
         </CardHeader>
         <CardContent className="space-y-6">
           {/* QR Code */}
-          <div className="flex flex-col items-center p-6 bg-gray-50 rounded-lg">
+          <div className="flex flex-col items-center p-4 sm:p-6 bg-gray-50 rounded-lg">
             <img
               src={badge.qrCodeImage}
               alt="QR Code"
-              className="w-64 h-64 border-4 border-white shadow-lg"
+              className="aspect-square w-full max-w-64 h-auto border-4 border-white shadow-lg"
             />
             <p className="mt-4 text-sm text-gray-600">
               Scannez ce code pour vérifier l'identité
@@ -51,7 +51,7 @@ export const BadgeDetailModal: React.FC<BadgeDetailModalProps> = ({
           {/* Informations Badge */}
           <div className="space-y-4">
             <h3 className="font-semibold text-lg">Informations du Badge</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <p className="text-sm text-gray-500">Badge ID</p>
                 <p className="font-medium">{badge.badgeId}</p>
@@ -97,7 +97,7 @@ export const BadgeDetailModal: React.FC<BadgeDetailModalProps> = ({
           {/* Informations Employé */}
           <div className="space-y-4">
             <h3 className="font-semibold text-lg">Informations de l'Employé</h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <div>
                 <p className="text-sm text-gray-500">Nom complet</p>
                 <p className="font-medium">

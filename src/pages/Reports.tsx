@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { format, parse, parseISO, eachDayOfInterval, startOfDay, differenceInMinutes } from "date-fns";
 import { RefreshCw, FileBarChart2, CalendarX, Clock, Users, UserX, FileText, FileSpreadsheet, FileDown } from "lucide-react";
-import { Sidebar } from "@/components/sidebar/Sidebar";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -369,56 +369,59 @@ const Reports = () => {
   const isFetching = isFetchingEmployees || isFetchingScans;
 
   return (
-    <div className="min-h-screen bg-app flex">
-      <Sidebar />
+    <AppLayout>
+      <PageHeader
+        icon={FileBarChart2}
+        title="Rapports de pointage"
+        description="Visualisez les employés absents ou en retard selon les horaires configurés."
+        actions={
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="sm:h-10"
+              onClick={() => handleExport("pdf")}
+              title="Exporter en PDF"
+            >
+              <FileText className="mr-2 h-4 w-4" />
+              PDF
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="sm:h-10"
+              onClick={() => handleExport("xlsx")}
+              title="Exporter en Excel"
+            >
+              <FileSpreadsheet className="mr-2 h-4 w-4" />
+              Excel
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="sm:h-10"
+              onClick={() => handleExport("csv")}
+              title="Exporter en CSV"
+            >
+              <FileDown className="mr-2 h-4 w-4" />
+              CSV
+            </Button>
+            <Button variant="outline" size="sm" className="sm:h-10" onClick={handleRefresh} disabled={isLoading || isFetching}>
+              <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
+              Actualiser
+            </Button>
+          </div>
+        }
+      />
 
-      <div className="flex-1 ml-64 overflow-auto h-screen">
-        <main className="container mx-auto px-4 py-8 space-y-6 animate-fade-in-up">
-          <PageHeader
-            icon={FileBarChart2}
-            title="Rapports de pointage"
-            description="Visualisez les employés absents ou en retard selon les horaires configurés."
-            actions={
-              <div className="flex flex-wrap gap-2">
-                <Button
-                  variant="outline"
-                  onClick={() => handleExport("pdf")}
-                  title="Exporter en PDF"
-                >
-                  <FileText className="mr-2 h-4 w-4" />
-                  PDF
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleExport("xlsx")}
-                  title="Exporter en Excel"
-                >
-                  <FileSpreadsheet className="mr-2 h-4 w-4" />
-                  Excel
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleExport("csv")}
-                  title="Exporter en CSV"
-                >
-                  <FileDown className="mr-2 h-4 w-4" />
-                  CSV
-                </Button>
-                <Button variant="outline" onClick={handleRefresh} disabled={isLoading || isFetching}>
-                  <RefreshCw className={`mr-2 h-4 w-4 ${isFetching ? "animate-spin" : ""}`} />
-                  Actualiser
-                </Button>
-              </div>
-            }
-          />
-
-          <Card>
+      <div className="space-y-6">
+      <Card>
             <CardHeader>
               <CardTitle>Filtres</CardTitle>
               <CardDescription>Appliquez une date précise ou une période glissante</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
                 <div className="space-y-2">
                   <Label htmlFor="search">Recherche</Label>
                   <Input
@@ -472,7 +475,7 @@ const Reports = () => {
             </CardContent>
           </Card>
 
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
             <Card className="transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground">Total d&apos;absences</CardTitle>
@@ -663,9 +666,8 @@ const Reports = () => {
           <div className="grid gap-6">
             <InternsList />
           </div>
-        </main>
       </div>
-    </div>
+    </AppLayout>
   );
 };
 

@@ -3,7 +3,7 @@ import { Plus, BadgeCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/PageHeader";
-import { Sidebar } from "@/components/sidebar/Sidebar";
+import { AppLayout } from "@/components/layout/AppLayout";
 import { toast } from "sonner";
 import { BadgeStats } from "@/components/badges/BadgeStats";
 import { BadgeFilters } from "@/components/badges/BadgeFilters";
@@ -203,25 +203,23 @@ const BadgeManagement: React.FC = () => {
   };
 
   return (
-    <div className="flex min-h-screen bg-app">
-      <Sidebar />
-      <div className="flex-1 ml-64 px-4 py-8 overflow-x-hidden animate-fade-in-up">
-        <div className="space-y-6">
-          {/* Header */}
-          <PageHeader
-            icon={BadgeCheck}
-            title="Gestion des Badges"
-            description="Gérez les badges d'identification des employés"
-            actions={
-              <Button
-                onClick={() => setShowCreateModal(true)}
-                className="bg-primary hover:bg-primary/90"
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Nouveau badge
-              </Button>
-            }
-          />
+    <AppLayout>
+      <div className="space-y-6">
+        {/* Header */}
+        <PageHeader
+          icon={BadgeCheck}
+          title="Gestion des Badges"
+          description="Gérez les badges d'identification des employés"
+          actions={
+            <Button
+              onClick={() => setShowCreateModal(true)}
+              className="bg-primary hover:bg-primary/90"
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              Nouveau badge
+            </Button>
+          }
+        />
 
           {/* Stats */}
           <BadgeStats stats={stats} />
@@ -287,44 +285,43 @@ const BadgeManagement: React.FC = () => {
               </Card>
             )}
           </div>
-        </div>
       </div>
 
       {/* Modals */}
-      {showDetailModal && (
-        <BadgeDetailModal
-          badge={selectedBadge}
-          onClose={() => setShowDetailModal(false)}
+        {showDetailModal && (
+          <BadgeDetailModal
+            badge={selectedBadge}
+            onClose={() => setShowDetailModal(false)}
+          />
+        )}
+
+        {showCreateModal && (
+          <CreateBadgeModal
+            onClose={() => setShowCreateModal(false)}
+            onSubmit={handleCreateBadge}
+            isSubmitting={isSubmitting}
+          />
+        )}
+
+        <RevokeBadgeDialog
+          open={revokeTarget !== null}
+          onOpenChange={(open) => { if (!open) setRevokeTarget(null); }}
+          badgeLabel={revokeTarget?.badgeId ?? ""}
+          onConfirm={confirmRevokeBadge}
+          isLoading={isSubmitting}
         />
-      )}
 
-      {showCreateModal && (
-        <CreateBadgeModal
-          onClose={() => setShowCreateModal(false)}
-          onSubmit={handleCreateBadge}
-          isSubmitting={isSubmitting}
+        <ConfirmDialog
+          open={reactivateTarget !== null}
+          onOpenChange={(open) => { if (!open) setReactivateTarget(null); }}
+          title="Réactiver ce badge"
+          description={`Voulez-vous réactiver le badge ${reactivateTarget?.badgeId ?? ""} ? L'employé pourra de nouveau l'utiliser.`}
+          confirmLabel="Réactiver"
+          variant="info"
+          onConfirm={confirmReactivateBadge}
+          isLoading={isSubmitting}
         />
-      )}
-
-      <RevokeBadgeDialog
-        open={revokeTarget !== null}
-        onOpenChange={(open) => { if (!open) setRevokeTarget(null); }}
-        badgeLabel={revokeTarget?.badgeId ?? ""}
-        onConfirm={confirmRevokeBadge}
-        isLoading={isSubmitting}
-      />
-
-      <ConfirmDialog
-        open={reactivateTarget !== null}
-        onOpenChange={(open) => { if (!open) setReactivateTarget(null); }}
-        title="Réactiver ce badge"
-        description={`Voulez-vous réactiver le badge ${reactivateTarget?.badgeId ?? ""} ? L'employé pourra de nouveau l'utiliser.`}
-        confirmLabel="Réactiver"
-        variant="info"
-        onConfirm={confirmReactivateBadge}
-        isLoading={isSubmitting}
-      />
-    </div>
+    </AppLayout>
   );
 };
 

@@ -111,6 +111,14 @@ All colors MUST be HSL.
     @apply border-border;
   }
 
+  html,
+  body {
+    /* Empêche tout débordement horizontal sur mobile */
+    overflow-x: hidden;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
   body {
     @apply bg-background text-foreground antialiased;
     font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI",
@@ -280,4 +288,18 @@ All colors MUST be HSL.
 
 .scan-line {
   animation: scan-sweep 2.4s ease-in-out infinite;
+}
+
+/* Mobile : zones sûres (encoche / barre gestuelle iOS & Android) */
+@layer utilities {
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .px-safe {
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
+  }
 }
