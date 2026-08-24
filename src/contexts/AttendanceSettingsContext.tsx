@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from "react";
 
 const STORAGE_KEY = "attendance-settings";
 
@@ -57,13 +57,13 @@ export const AttendanceSettingsProvider = ({ children }: { children: ReactNode }
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
   }, [settings]);
 
-  const updateSettings = (value: AttendanceSettings) => {
+  const updateSettings = useCallback((value: AttendanceSettings) => {
     setSettings(value);
-  };
+  }, []);
 
-  const resetSettings = () => {
+  const resetSettings = useCallback(() => {
     setSettings(DEFAULT_SETTINGS);
-  };
+  }, []);
 
   const value = useMemo(
     () => ({
@@ -71,7 +71,7 @@ export const AttendanceSettingsProvider = ({ children }: { children: ReactNode }
       updateSettings,
       resetSettings,
     }),
-    [settings],
+    [settings, updateSettings, resetSettings],
   );
 
   return (

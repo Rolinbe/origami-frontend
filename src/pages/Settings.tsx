@@ -102,6 +102,7 @@ const SettingsPage = () => {
         morningEnd: saved.morningEnd,
         afternoonStart: saved.afternoonStart,
         afternoonEnd: saved.afternoonEnd,
+        lateToleranceMinutes: saved.lateToleranceMinutes,
       });
       toast.success("Paramètres réinitialisés");
     } catch (error) {

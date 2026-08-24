@@ -1,73 +1,47 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { differenceInMinutes, isSameDay, parseISO } from "date-fns";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Clock, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { useAttendanceSettings } from "@/contexts/AttendanceSettingsContext";
 import apiService from "@/services/api.service";
 import { formatTimeFr } from "@/utils/dateFormat";
 import { LoadingBar } from "@/components/LoadingBar";
 
-type ScanType = "check_in" | "check_out";
-
-interface ScanHistoryItem {
-  id: string;
-  badgeId: string;
-  scanTime: string;
-  scanType: ScanType;
-  user: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    role?: string;
-    employeeType?: string;
-    service?: {
-      name: string;
-    } | null;
-  } | null;
-}
-
 interface LateEmployeeRow {
-  id: string;
-  fullName: string;
-  service: string;
+  attendanceId: string;
+  userId: string;
+  firstName?: string | null;
+  lastName?: string | null;
+  position?: string | null;
+  profileImage?: string | null;
+  employeeType?: string | null;
+  service?: string | null;
+  serviceColor?: string | null;
+  checkInTime: string;
   scanTime: string;
   lateMinutes: number;
 }
 
-const fetchAttendanceHistory = async (): Promise<ScanHistoryItem[]> => {
-  const response = await apiService.get<{ scanLogs?: ScanHistoryItem[] }>(
-    "/scan/history?limit=200"
+const fetchLateEmployees = async (): Promise<LateEmployeeRow[]> => {
+  const response = await apiService.get<{ lateEmployees?: LateEmployeeRow[] }>(
+    "/dashboard/late-employees",
   );
-  return response.data.scanLogs ?? [];
-};
-
-const parseTimeForDate = (time: string, baseDate: Date) => {
-  const [hour = "0", minute = "0"] = time.split(":");
-  const result = new Date(baseDate);
-  result.setHours(Number(hour), Number(minute), 0, 0);
-  return result;
-};
-
-const isWithinRange = (value: Date, start: Date, end: Date) => {
-  return value >= start && value <= end;
+  return response.data.lateEmployees ?? [];
 };
 
 const LateEmployees = () => {
-  const { settings } = useAttendanceSettings();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const {
-    data: scanLogs = [],
+    data: lateEmployees = [],
     isLoading,
     isError,
     error,
     refetch,
   } = useQuery({
     queryKey: ["dashboard-late-employees"],
-    queryFn: fetchAttendanceHistory,
+    queryFn: fetchLateEmployees,
     refetchInterval: 60_000,
   });
 
@@ -78,54 +52,7 @@ const LateEmployees = () => {
     toast.success("Données actualisées");
   };
 
-  const today = useMemo(() => new Date(), []);
-
-  const lateEmployees: LateEmployeeRow[] = useMemo(() => {
-    const morningStart = parseTimeForDate(settings.morningStart, today);
-    const morningEnd = parseTimeForDate(settings.morningEnd, today);
-    const afternoonStart = parseTimeForDate(settings.afternoonStart, today);
-    const afternoonEnd = parseTimeForDate(settings.afternoonEnd, today);
-
-    return scanLogs
-      .filter((log) => isSameDay(parseISO(log.scanTime), today))
-      .filter((log) => log.scanType === "check_in")
-      .filter((log) => log.user?.employeeType !== "intern")
-      .map((log) => {
-        const date = parseISO(log.scanTime);
-
-        let referenceStart = morningStart;
-        if (isWithinRange(date, morningStart, morningEnd)) {
-          referenceStart = morningStart;
-        } else if (isWithinRange(date, afternoonStart, afternoonEnd)) {
-          referenceStart = afternoonStart;
-        } else if (date < morningStart) {
-          referenceStart = morningStart;
-        } else if (date > morningEnd && date < afternoonStart) {
-          referenceStart = afternoonStart;
-        } else if (date >= afternoonEnd) {
-          referenceStart = afternoonStart;
-        }
-
-        const diffMinutes = Math.max(differenceInMinutes(date, referenceStart), 0);
-        if (diffMinutes <= 15) return null;
-
-        const fullName =
-          log.user && (log.user.firstName || log.user.lastName)
-            ? `${log.user.firstName ?? ""} ${log.user.lastName ?? ""}`.trim()
-            : "Employé inconnu";
-        const service = log.user?.service?.name ?? log.user?.role ?? "Service inconnu";
-
-        return {
-          id: log.id,
-          fullName,
-          service,
-          scanTime: log.scanTime,
-          lateMinutes: diffMinutes,
-        };
-      })
-      .filter((row): row is LateEmployeeRow => row !== null)
-      .sort((a, b) => b.lateMinutes - a.lateMinutes);
-  }, [scanLogs, settings, today]);
+  const totalCount = lateEmployees.length;
 
   return (
     <Card className="relative transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:shadow-lift">
@@ -142,7 +69,7 @@ const LateEmployees = () => {
                 ? "Chargement…"
                 : isError
                   ? "Erreur de chargement"
-                  : `${lateEmployees.length} retardataire(s) aujourd'hui`}
+                  : `${totalCount} retardataire(s) aujourd'hui`}
             </CardDescription>
           </div>
           <Button
@@ -177,22 +104,30 @@ const LateEmployees = () => {
                   <div className="h-4 bg-muted rounded w-2/3" />
                   <div className="h-3 bg-muted rounded w-1/3" />
                 </div>
-                <div className="h-6 bg-muted rounded w-20" />
+                <div className="h-6 w-20 bg-muted rounded" />
               </div>
             ))
-          ) : lateEmployees.length === 0 ? (
+          ) : totalCount === 0 ? (
             <div className="py-6 text-center text-sm text-muted-foreground">
               Aucun retard enregistré aujourd'hui.
             </div>
           ) : (
             lateEmployees.map((employee) => (
               <div
-                key={employee.id}
+                key={employee.attendanceId}
                 className="flex items-center justify-between p-3 rounded-lg border bg-card"
               >
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{employee.fullName}</p>
-                  <p className="text-sm text-muted-foreground truncate">{employee.service}</p>
+                  <p className="font-medium truncate">
+                    {`${employee.firstName ?? ""} ${employee.lastName ?? ""}`.trim() ||
+                      "Employé inconnu"}
+                    {employee.employeeType === "intern" && (
+                      <span className="ml-2 text-xs text-muted-foreground">(Stagiaire)</span>
+                    )}
+                  </p>
+                  <p className="text-sm text-muted-foreground truncate">
+                    {employee.service ?? "Service inconnu"}
+                  </p>
                 </div>
                 <div className="text-right shrink-0">
                   <Badge variant="destructive" className="flex items-center gap-1">

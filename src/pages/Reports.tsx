@@ -100,7 +100,6 @@ interface SortState {
 
 const EMPLOYEE_FETCH_LIMIT = 500;
 const SCAN_HISTORY_LIMIT = 500;
-const LATE_THRESHOLD_MINUTES = 5;
 const PAGE_SIZE = 15;
 
 const initialFilters: ReportFilters = {
@@ -210,6 +209,7 @@ const SortableTh = ({ label, sortKey, sort, onToggle, className }: SortableThPro
 
 const Reports = () => {
   const { settings } = useAttendanceSettings();
+  const lateToleranceMinutes = useMemo(() => settings.lateToleranceMinutes ?? 5, [settings]);
   const [formFilters, setFormFilters] = useState<ReportFilters>(initialFilters);
   const [queryFilters, setQueryFilters] = useState<ReportFilters>(initialFilters);
   const [serviceFilter, setServiceFilter] = useState<string>("all");
@@ -404,7 +404,7 @@ const Reports = () => {
       const referenceStart = resolveReferenceStart(scanDate);
       const delay = Math.max(differenceInMinutes(scanDate, referenceStart), 0);
 
-      if (delay > LATE_THRESHOLD_MINUTES) {
+      if (delay > lateToleranceMinutes) {
         const employee = log.user?.id ? employeeMap.get(log.user.id) : undefined;
         const fullName =
           employee?.firstName || employee?.lastName
@@ -770,7 +770,7 @@ const Reports = () => {
               </CardHeader>
               <CardContent>
                 <p className="text-3xl font-bold tracking-tight">{isLoading ? "—" : lateCount}</p>
-                <CardDescription className="mt-1">Entrées après +{LATE_THRESHOLD_MINUTES} min</CardDescription>
+                <CardDescription className="mt-1">Entrées après +{lateToleranceMinutes} min</CardDescription>
               </CardContent>
             </Card>
             <Card className="transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lift">
