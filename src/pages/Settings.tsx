@@ -44,6 +44,7 @@ const SettingsPage = () => {
           morningEnd: backendSettings.morningEnd,
           afternoonStart: backendSettings.afternoonStart,
           afternoonEnd: backendSettings.afternoonEnd,
+          lateToleranceMinutes: backendSettings.lateToleranceMinutes,
         });
       } catch (error) {
         console.error("Impossible de charger les paramètres:", error);
@@ -81,6 +82,7 @@ const SettingsPage = () => {
         morningEnd: saved.morningEnd,
         afternoonStart: saved.afternoonStart,
         afternoonEnd: saved.afternoonEnd,
+        lateToleranceMinutes: saved.lateToleranceMinutes,
       });
       toast.success("Paramètres enregistrés");
     } catch (error) {

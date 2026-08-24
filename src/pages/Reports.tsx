@@ -1,7 +1,31 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { format, parse, parseISO, eachDayOfInterval, startOfDay, differenceInMinutes } from "date-fns";
-import { RefreshCw, FileBarChart2, CalendarX, Clock, Users, UserX, FileText, FileSpreadsheet, FileDown } from "lucide-react";
+import { useAttendanceSettings } from "@/contexts/AttendanceSettingsContext";
+import {
+  format,
+  parse,
+  parseISO,
+  eachDayOfInterval,
+  startOfDay,
+  endOfMonth,
+  startOfMonth,
+  subDays,
+  differenceInMinutes,
+} from "date-fns";
+import {
+  RefreshCw,
+  FileBarChart2,
+  CalendarX,
+  Clock,
+  Users,
+  UserX,
+  FileText,
+  FileSpreadsheet,
+  FileDown,
+  ArrowUpDown,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/PageHeader";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,12 +35,14 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import InternsList from "@/components/dashboard/InternsList";
-import { useAttendanceSettings } from "@/contexts/AttendanceSettingsContext";
+import PresenceStatusList from "@/components/reports/PresenceStatusList";
 import employeeService from "@/services/employee.service";
+import serviceService from "@/services/service.service";
 import apiService from "@/services/api.service";
 import { downloadFile } from "@/utils/download";
 import { toast } from "sonner";
 import { Employee, EmployeeListResponse } from "@/types/employee.types";
+import { cn } from "@/lib/utils";
 
 type ScanType = "check_in" | "check_out";
 
@@ -48,6 +74,7 @@ interface AbsenceRow {
   employeeId: string;
   fullName: string;
   serviceName: string;
+  serviceId: string;
   employeeType: string;
   date: string;
 }
@@ -57,21 +84,65 @@ interface LateRow {
   employeeId: string;
   fullName: string;
   serviceName: string;
+  serviceId: string;
   employeeType: string;
   date: string;
   timeLabel: string;
   lateMinutes: number;
 }
 
+type SortDir = "asc" | "desc";
+
+interface SortState {
+  key: string;
+  dir: SortDir;
+}
+
 const EMPLOYEE_FETCH_LIMIT = 500;
 const SCAN_HISTORY_LIMIT = 500;
-const LATE_THRESHOLD_MINUTES = 15;
+const LATE_THRESHOLD_MINUTES = 5;
+const PAGE_SIZE = 15;
 
 const initialFilters: ReportFilters = {
   date: "",
   startDate: "",
   endDate: "",
   search: "",
+};
+
+const selectClass =
+  "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2";
+
+const toKey = (value: Date) => format(value, "yyyy-MM-dd");
+const todayKey = () => toKey(startOfDay(new Date()));
+
+type PresetKey = "today" | "yesterday" | "7d" | "month";
+
+const getPresetRange = (preset: PresetKey): { startDate: string; endDate: string } => {
+  const today = startOfDay(new Date());
+  switch (preset) {
+    case "today":
+      return { startDate: toKey(today), endDate: toKey(today) };
+    case "yesterday": {
+      const y = subDays(today, 1);
+      return { startDate: toKey(y), endDate: toKey(y) };
+    }
+    case "7d":
+      return { startDate: toKey(subDays(today, 6)), endDate: toKey(today) };
+    case "month":
+      return { startDate: toKey(startOfMonth(today)), endDate: toKey(endOfMonth(today)) };
+  }
+};
+
+const detectPreset = (filters: ReportFilters): PresetKey | null => {
+  if (filters.date) return null;
+  const presets: PresetKey[] = ["today", "yesterday", "7d", "month"];
+  return (
+    presets.find((preset) => {
+      const range = getPresetRange(preset);
+      return filters.startDate === range.startDate && filters.endDate === range.endDate;
+    }) ?? null
+  );
 };
 
 const parseFilterDate = (value?: string) => {
@@ -96,10 +167,57 @@ const parseTimeForDate = (time: string, baseDate: Date) => {
 
 const isWithinRange = (value: Date, start: Date, end: Date) => value >= start && value <= end;
 
+const compareValues = (a: unknown, b: unknown) => {
+  if (typeof a === "number" && typeof b === "number") return a - b;
+  return String(a ?? "").localeCompare(String(b ?? ""), "fr", { sensitivity: "base", numeric: true });
+};
+
+const sortRows = <T extends Record<string, unknown>>(rows: T[], sort: SortState): T[] =>
+  [...rows].sort((a, b) => {
+    const cmp = compareValues(a[sort.key], b[sort.key]);
+    return sort.dir === "asc" ? cmp : -cmp;
+  });
+
+interface SortableThProps {
+  label: string;
+  sortKey: string;
+  sort: SortState;
+  onToggle: (key: string) => void;
+  className?: string;
+}
+
+const SortableTh = ({ label, sortKey, sort, onToggle, className }: SortableThProps) => (
+  <TableHead className={className}>
+    <button
+      type="button"
+      onClick={() => onToggle(sortKey)}
+      className="inline-flex items-center gap-1 hover:text-foreground"
+      title={`Trier par ${label.toLowerCase()}`}
+    >
+      {label}
+      {sort.key === sortKey ? (
+        sort.dir === "asc" ? (
+          <ArrowUp className="h-3.5 w-3.5 text-primary" />
+        ) : (
+          <ArrowDown className="h-3.5 w-3.5 text-primary" />
+        )
+      ) : (
+        <ArrowUpDown className="h-3.5 w-3.5 opacity-40" />
+      )}
+    </button>
+  </TableHead>
+);
+
 const Reports = () => {
   const { settings } = useAttendanceSettings();
   const [formFilters, setFormFilters] = useState<ReportFilters>(initialFilters);
   const [queryFilters, setQueryFilters] = useState<ReportFilters>(initialFilters);
+  const [serviceFilter, setServiceFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [absenceSort, setAbsenceSort] = useState<SortState>({ key: "fullName", dir: "asc" });
+  const [lateSort, setLateSort] = useState<SortState>({ key: "lateMinutes", dir: "desc" });
+  const [absenceVisible, setAbsenceVisible] = useState<number>(PAGE_SIZE);
+  const [lateVisible, setLateVisible] = useState<number>(PAGE_SIZE);
 
   const {
     data: employeesResponse,
@@ -111,6 +229,14 @@ const Reports = () => {
   } = useQuery<EmployeeListResponse>({
     queryKey: ["reports-employees"],
     queryFn: () => employeeService.getAllEmployees(1, EMPLOYEE_FETCH_LIMIT, { status: "active" }),
+  });
+
+  const {
+    data: services = [],
+    isLoading: isLoadingServices,
+  } = useQuery({
+    queryKey: ["reports-services"],
+    queryFn: () => serviceService.getAllServices(true),
   });
 
   const {
@@ -131,7 +257,7 @@ const Reports = () => {
     refetchInterval: 60_000,
   });
 
-  const employees = employeesResponse?.employees ?? [];
+  const employees = useMemo(() => employeesResponse?.employees ?? [], [employeesResponse]);
   const trackedEmployees = useMemo(
     () => employees.filter((employee) => employee.isActive),
     [employees],
@@ -180,30 +306,49 @@ const Reports = () => {
     [scanLogs, selectedDateSet],
   );
 
-  const filteredCheckIns = useMemo(
-    () =>
-      filteredScanLogs.filter(
-        (log) => log.scanType === "check_in" && log.user?.employeeType !== "intern" && log.user?.id,
-      ),
+  // Tous les check-ins identifiés (stagiaires INCLUS) → sert à la détection de présence
+  const allCheckIns = useMemo(
+    () => filteredScanLogs.filter((log) => log.scanType === "check_in" && log.user?.id),
     [filteredScanLogs],
+  );
+
+  // Check-ins hors stagiaires → sert uniquement au calcul des retards
+  // (les stagiaires n'ont pas d'horaire strict, on ne compte pas leurs retards)
+  const filteredCheckIns = useMemo(
+    () => allCheckIns.filter((log) => log.user?.employeeType !== "intern"),
+    [allCheckIns],
   );
 
   const presenceSet = useMemo(() => {
     const set = new Set<string>();
-    filteredCheckIns.forEach((log) => {
+    allCheckIns.forEach((log) => {
       const userId = log.user?.id;
       if (!userId) return;
       const dateKey = format(parseISO(log.scanTime), "yyyy-MM-dd");
       set.add(`${userId}-${dateKey}`);
     });
     return set;
-  }, [filteredCheckIns]);
+  }, [allCheckIns]);
+
+  // Filtres secondaires appliqués en direct (service / type / recherche)
+  const searchTerm = formFilters.search.trim().toLowerCase();
+  const matchesSecondaryFilters = (row: { fullName: string; serviceName: string; serviceId: string; employeeType: string }) => {
+    if (serviceFilter !== "all" && row.serviceId !== serviceFilter) return false;
+    if (typeFilter !== "all" && row.employeeType !== typeFilter) return false;
+    if (!searchTerm) return true;
+    return (
+      row.fullName.toLowerCase().includes(searchTerm) ||
+      row.serviceName.toLowerCase().includes(searchTerm) ||
+      row.employeeType.toLowerCase().includes(searchTerm)
+    );
+  };
 
   const absenceRows = useMemo<AbsenceRow[]>(() => {
     const rows: AbsenceRow[] = [];
     trackedEmployees.forEach((employee) => {
       const fullName = `${employee.firstName} ${employee.lastName}`.trim() || "Employé inconnu";
       const serviceName = employee.service?.name ?? "Service inconnu";
+      const serviceId = employee.service?.id ?? employee.serviceId ?? "";
 
       selectedDateKeys.forEach((dateKey) => {
         const presenceKey = `${employee.id}-${dateKey}`;
@@ -213,6 +358,7 @@ const Reports = () => {
             employeeId: employee.id,
             fullName,
             serviceName,
+            serviceId,
             employeeType: employee.employeeType ?? "permanent",
             date: dateKey,
           });
@@ -267,12 +413,14 @@ const Reports = () => {
 
         const serviceName =
           employee?.service?.name ?? log.user?.service?.name ?? "Service inconnu";
+        const serviceId = employee?.service?.id ?? employee?.serviceId ?? "";
 
         rows.push({
           id: log.id,
           employeeId: log.user?.id ?? log.badgeId,
           fullName,
           serviceName,
+          serviceId,
           employeeType: employee?.employeeType ?? log.user?.employeeType ?? "permanent",
           date: format(scanDate, "yyyy-MM-dd"),
           timeLabel: scanDate.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" }),
@@ -282,40 +430,70 @@ const Reports = () => {
     });
 
     return rows.sort((a, b) => (a.date === b.date ? a.timeLabel.localeCompare(b.timeLabel) : a.date.localeCompare(b.date)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [earliestCheckIns, employeeMap, settings]);
 
-  const searchTerm = (queryFilters.search ?? "").trim().toLowerCase();
-  const matchesSearch = (fullName: string, serviceName: string, employeeType: string) => {
-    if (!searchTerm) return true;
-    return (
-      fullName.toLowerCase().includes(searchTerm) ||
-      serviceName.toLowerCase().includes(searchTerm) ||
-      employeeType.toLowerCase().includes(searchTerm)
-    );
-  };
-
-  const filteredAbsenceRows = useMemo(
-    () => absenceRows.filter((row) => matchesSearch(row.fullName, row.serviceName, row.employeeType)),
-    [absenceRows, searchTerm],
+  const filteredAbsenceRowsAll = useMemo(
+    () => absenceRows.filter(matchesSecondaryFilters),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [absenceRows, serviceFilter, typeFilter, searchTerm],
   );
 
-  const filteredLateRows = useMemo(
-    () => lateRows.filter((row) => matchesSearch(row.fullName, row.serviceName, row.employeeType)),
-    [lateRows, searchTerm],
+  const filteredLateRowsAll = useMemo(
+    () => lateRows.filter(matchesSecondaryFilters),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [lateRows, serviceFilter, typeFilter, searchTerm],
   );
 
-  const absenceCount = filteredAbsenceRows.length;
-  const lateCount = filteredLateRows.length;
+  const sortedAbsenceRows = useMemo(
+    () => sortRows(filteredAbsenceRowsAll, absenceSort),
+    [filteredAbsenceRowsAll, absenceSort],
+  );
+  const sortedLateRows = useMemo(
+    () => sortRows(filteredLateRowsAll, lateSort),
+    [filteredLateRowsAll, lateSort],
+  );
+
+  const visibleAbsenceRows = useMemo(
+    () => sortedAbsenceRows.slice(0, absenceVisible),
+    [sortedAbsenceRows, absenceVisible],
+  );
+  const visibleLateRows = useMemo(
+    () => sortedLateRows.slice(0, lateVisible),
+    [sortedLateRows, lateVisible],
+  );
+
+  // Réinitialiser la pagination quand les données ou filtres changent
+  useEffect(() => {
+    setAbsenceVisible(PAGE_SIZE);
+    setLateVisible(PAGE_SIZE);
+  }, [
+    queryFilters.date,
+    queryFilters.startDate,
+    queryFilters.endDate,
+    searchTerm,
+    serviceFilter,
+    typeFilter,
+    absenceSort.key,
+    absenceSort.dir,
+    lateSort.key,
+    lateSort.dir,
+  ]);
+
+  const absenceCount = filteredAbsenceRowsAll.length;
+  const lateCount = filteredLateRowsAll.length;
 
   const uniqueAbsentEmployees = useMemo(() => {
-    const ids = new Set(filteredAbsenceRows.map((row) => row.employeeId));
+    const ids = new Set(filteredAbsenceRowsAll.map((row) => row.employeeId));
     return ids.size;
-  }, [filteredAbsenceRows]);
+  }, [filteredAbsenceRowsAll]);
 
   const uniqueLateEmployees = useMemo(() => {
-    const ids = new Set(filteredLateRows.map((row) => row.employeeId));
+    const ids = new Set(filteredLateRowsAll.map((row) => row.employeeId));
     return ids.size;
-  }, [filteredLateRows]);
+  }, [filteredLateRowsAll]);
+
+  const activePreset = useMemo(() => detectPreset(queryFilters), [queryFilters]);
 
   const handleChange = (field: keyof ReportFilters, value: string) => {
     setFormFilters((prev) => ({
@@ -324,14 +502,46 @@ const Reports = () => {
     }));
   };
 
+  const applyDateFilters = (next: { date?: string; startDate?: string; endDate?: string }) => {
+    setFormFilters((prev) => ({ ...prev, ...next }));
+    setQueryFilters((prev) => ({ ...prev, ...next }));
+  };
+
   const handleApplyFilters = () => {
-    setQueryFilters(formFilters);
+    setQueryFilters((prev) => ({
+      ...prev,
+      date: formFilters.date,
+      startDate: formFilters.startDate,
+      endDate: formFilters.endDate,
+    }));
+    toast.success("Filtres appliqués");
   };
 
   const handleResetFilters = () => {
     setFormFilters(initialFilters);
     setQueryFilters(initialFilters);
+    setServiceFilter("all");
+    setTypeFilter("all");
+    toast.success("Filtres réinitialisés");
   };
+
+  const handlePreset = (preset: PresetKey) => {
+    applyDateFilters(getPresetRange(preset));
+  };
+
+  const toggleAbsenceSort = (key: string) =>
+    setAbsenceSort((prev) =>
+      prev.key === key
+        ? { key, dir: prev.dir === "asc" ? "desc" : "asc" }
+        : { key, dir: "asc" },
+    );
+
+  const toggleLateSort = (key: string) =>
+    setLateSort((prev) =>
+      prev.key === key
+        ? { key, dir: prev.dir === "asc" ? "desc" : "asc" }
+        : { key, dir: "asc" },
+    );
 
   const handleRefresh = () => {
     Promise.all([refetchEmployees(), refetchScans()]).then(() =>
@@ -339,17 +549,25 @@ const Reports = () => {
     );
   };
 
-  const handleExport = async (format: "pdf" | "xlsx" | "csv") => {
+  const handleExport = async (exportFormat: "pdf" | "xlsx" | "csv") => {
     try {
       const params = new URLSearchParams();
-      params.append("format", format);
+      params.append("format", exportFormat);
       if (queryFilters.date) params.append("date", queryFilters.date);
       if (queryFilters.startDate) params.append("startDate", queryFilters.startDate);
       if (queryFilters.endDate) params.append("endDate", queryFilters.endDate);
+      if (serviceFilter !== "all") params.append("serviceId", serviceFilter);
+      if (typeFilter !== "all") params.append("employeeType", typeFilter);
+      const suffix = queryFilters.startDate
+        ? `_${queryFilters.startDate}${queryFilters.endDate ? `_au_${queryFilters.endDate}` : ""}`
+        : queryFilters.date
+          ? `_${queryFilters.date}`
+          : `_${todayKey()}`;
       await downloadFile(
         `/reports/attendance?${params.toString()}`,
-        `rapport_pointage.${format}`,
+        `rapport_pointage${suffix}.${exportFormat}`,
       );
+      toast.success("Rapport exporté");
     } catch (error) {
       console.error("Erreur export:", error);
       toast.error((error as Error).message);
@@ -365,8 +583,15 @@ const Reports = () => {
 
   const hasError = isEmployeeError || isScanError;
   const errorMessage = (employeesError as Error)?.message ?? (scanError as Error)?.message;
-  const isLoading = isLoadingEmployees || isLoadingScans;
+  const isLoading = isLoadingEmployees || isLoadingScans || isLoadingServices;
   const isFetching = isFetchingEmployees || isFetchingScans;
+
+  const presets: { key: PresetKey; label: string }[] = [
+    { key: "today", label: "Aujourd'hui" },
+    { key: "yesterday", label: "Hier" },
+    { key: "7d", label: "7 derniers jours" },
+    { key: "month", label: "Ce mois-ci" },
+  ];
 
   return (
     <AppLayout>
@@ -418,10 +643,29 @@ const Reports = () => {
       <Card>
             <CardHeader>
               <CardTitle>Filtres</CardTitle>
-              <CardDescription>Appliquez une date précise ou une période glissante</CardDescription>
+              <CardDescription>Recherche instantanée, périodes rapides et filtres détaillés</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-4">
+              {/* Périodes rapides */}
+              <div className="flex flex-wrap items-center gap-2">
+                {presets.map(({ key, label }) => (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => handlePreset(key)}
+                    className={cn(
+                      "rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all",
+                      activePreset === key && !queryFilters.date
+                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                        : "bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground",
+                    )}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3">
                 <div className="space-y-2">
                   <Label htmlFor="search">Recherche</Label>
                   <Input
@@ -457,6 +701,35 @@ const Reports = () => {
                     value={formFilters.endDate}
                     onChange={(event) => handleChange("endDate", event.currentTarget.value)}
                   />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="serviceFilter">Département</Label>
+                  <select
+                    id="serviceFilter"
+                    className={selectClass}
+                    value={serviceFilter}
+                    onChange={(event) => setServiceFilter(event.target.value)}
+                  >
+                    <option value="all">Tous les départements</option>
+                    {services.map((service) => (
+                      <option key={service.id} value={service.id}>
+                        {service.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="typeFilter">Type</Label>
+                  <select
+                    id="typeFilter"
+                    className={selectClass}
+                    value={typeFilter}
+                    onChange={(event) => setTypeFilter(event.target.value)}
+                  >
+                    <option value="all">Tous les types</option>
+                    <option value="permanent">Permanents</option>
+                    <option value="intern">Stagiaires</option>
+                  </select>
                 </div>
               </div>
 
@@ -536,6 +809,20 @@ const Reports = () => {
               <p>Date de début : {formatDateDisplay(queryFilters.startDate)}</p>
               <p>Date de fin : {formatDateDisplay(queryFilters.endDate)}</p>
               <p>Nombre de jours : {selectedDates.length}</p>
+              <p>
+                Département :{" "}
+                {serviceFilter === "all"
+                  ? "Tous"
+                  : services.find((service) => service.id === serviceFilter)?.name ?? "Inconnu"}
+              </p>
+              <p>
+                Type :{" "}
+                {typeFilter === "all"
+                  ? "Tous"
+                  : typeFilter === "intern"
+                    ? "Stagiaires"
+                    : "Permanents"}
+              </p>
             </CardContent>
           </Card>
 
@@ -551,48 +838,83 @@ const Reports = () => {
                     {errorMessage ?? "Impossible de charger les données de pointage."}
                   </div>
                 ) : (
-                  <div className="w-full rounded-md border overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Employé</TableHead>
-                          <TableHead className="hidden md:table-cell">Service</TableHead>
-                          <TableHead className="hidden md:table-cell">Type</TableHead>
-                          <TableHead>Date</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {isLoading ? (
-                          Array.from({ length: 5 }).map((_, index) => (
-                            <TableRow key={`absence-skeleton-${index}`}>
-                              <TableCell colSpan={4}>
-                                <div className="h-4 bg-muted animate-pulse rounded" />
-                              </TableCell>
-                            </TableRow>
-                          ))
-                        ) : filteredAbsenceRows.length === 0 ? (
+                  <>
+                    <div className="w-full rounded-md border overflow-x-auto">
+                      <Table>
+                        <TableHeader>
                           <TableRow>
-                            <TableCell colSpan={4} className="text-center text-muted-foreground">
-                              Aucun employé ou stagiaire absent pour ces critères.
-                            </TableCell>
+                            <SortableTh
+                              label="Employé"
+                              sortKey="fullName"
+                              sort={absenceSort}
+                              onToggle={toggleAbsenceSort}
+                            />
+                            <SortableTh
+                              label="Service"
+                              sortKey="serviceName"
+                              sort={absenceSort}
+                              onToggle={toggleAbsenceSort}
+                              className="hidden md:table-cell"
+                            />
+                            <SortableTh
+                              label="Type"
+                              sortKey="employeeType"
+                              sort={absenceSort}
+                              onToggle={toggleAbsenceSort}
+                              className="hidden md:table-cell"
+                            />
+                            <SortableTh
+                              label="Date"
+                              sortKey="date"
+                              sort={absenceSort}
+                              onToggle={toggleAbsenceSort}
+                            />
                           </TableRow>
-                        ) : (
-                          filteredAbsenceRows.map((row) => (
-                            <TableRow key={row.id}>
-                              <TableCell className="max-w-[10rem] truncate font-medium">{row.fullName}</TableCell>
-                              <TableCell className="hidden md:table-cell">{row.serviceName}</TableCell>
-                              <TableCell className="hidden md:table-cell">
-                                <Badge variant={row.employeeType === "intern" ? "secondary" : "outline"}>
-                                  {row.employeeType === "intern" ? "Stagiaire" : "Employé"}
-                                </Badge>
+                        </TableHeader>
+                        <TableBody>
+                          {isLoading ? (
+                            Array.from({ length: 5 }).map((_, index) => (
+                              <TableRow key={`absence-skeleton-${index}`}>
+                                <TableCell colSpan={4}>
+                                  <div className="h-4 bg-muted animate-pulse rounded" />
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          ) : visibleAbsenceRows.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={4} className="text-center text-muted-foreground">
+                                Aucun employé ou stagiaire absent pour ces critères.
                               </TableCell>
-                              <TableCell>{formatDateLabel(row.date)}</TableCell>
                             </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
+                          ) : (
+                            visibleAbsenceRows.map((row) => (
+                              <TableRow key={row.id}>
+                                <TableCell className="max-w-[10rem] truncate font-medium">{row.fullName}</TableCell>
+                                <TableCell className="hidden md:table-cell">{row.serviceName}</TableCell>
+                                <TableCell className="hidden md:table-cell">
+                                  <Badge variant={row.employeeType === "intern" ? "secondary" : "outline"}>
+                                    {row.employeeType === "intern" ? "Stagiaire" : "Employé"}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell>{formatDateLabel(row.date)}</TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    {sortedAbsenceRows.length > absenceVisible && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-3 w-full"
+                        onClick={() => setAbsenceVisible((count) => count + PAGE_SIZE)}
+                      >
+                        Afficher plus ({sortedAbsenceRows.length - absenceVisible} restant
+                        {sortedAbsenceRows.length - absenceVisible > 1 ? "s" : ""})
+                      </Button>
+                    )}
+                  </>
                 )}
               </CardContent>
             </Card>
@@ -608,62 +930,113 @@ const Reports = () => {
                     {errorMessage ?? "Impossible de charger les données de pointage."}
                   </div>
                 ) : (
-                  <div className="w-full rounded-md border overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Employé</TableHead>
-                          <TableHead className="hidden lg:table-cell">Service</TableHead>
-                          <TableHead className="hidden md:table-cell">Type</TableHead>
-                          <TableHead className="hidden xl:table-cell">Date</TableHead>
-                          <TableHead>Heure</TableHead>
-                          <TableHead>Retard</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {isLoading ? (
-                          Array.from({ length: 5 }).map((_, index) => (
-                            <TableRow key={`late-skeleton-${index}`}>
-                              <TableCell colSpan={6}>
-                                <div className="h-4 bg-muted animate-pulse rounded" />
-                              </TableCell>
-                            </TableRow>
-                          ))
-                        ) : filteredLateRows.length === 0 ? (
+                  <>
+                    <div className="w-full rounded-md border overflow-x-auto">
+                      <Table>
+                        <TableHeader>
                           <TableRow>
-                            <TableCell colSpan={6} className="text-center text-muted-foreground">
-                              Aucun retard détecté pour ces critères.
-                            </TableCell>
+                            <SortableTh
+                              label="Employé"
+                              sortKey="fullName"
+                              sort={lateSort}
+                              onToggle={toggleLateSort}
+                            />
+                            <SortableTh
+                              label="Service"
+                              sortKey="serviceName"
+                              sort={lateSort}
+                              onToggle={toggleLateSort}
+                              className="hidden lg:table-cell"
+                            />
+                            <SortableTh
+                              label="Type"
+                              sortKey="employeeType"
+                              sort={lateSort}
+                              onToggle={toggleLateSort}
+                              className="hidden md:table-cell"
+                            />
+                            <SortableTh
+                              label="Date"
+                              sortKey="date"
+                              sort={lateSort}
+                              onToggle={toggleLateSort}
+                              className="hidden xl:table-cell"
+                            />
+                            <SortableTh
+                              label="Heure"
+                              sortKey="timeLabel"
+                              sort={lateSort}
+                              onToggle={toggleLateSort}
+                            />
+                            <SortableTh
+                              label="Retard"
+                              sortKey="lateMinutes"
+                              sort={lateSort}
+                              onToggle={toggleLateSort}
+                            />
                           </TableRow>
-                        ) : (
-                          filteredLateRows.map((row) => (
-                            <TableRow key={row.id}>
-                              <TableCell className="max-w-[9rem] truncate font-medium">{row.fullName}</TableCell>
-                              <TableCell className="hidden lg:table-cell">{row.serviceName}</TableCell>
-                              <TableCell className="hidden md:table-cell">
-                                <Badge variant={row.employeeType === "intern" ? "secondary" : "outline"}>
-                                  {row.employeeType === "intern" ? "Stagiaire" : "Employé"}
-                                </Badge>
-                              </TableCell>
-                              <TableCell className="hidden xl:table-cell">{formatDateLabel(row.date)}</TableCell>
-                              <TableCell>{row.timeLabel}</TableCell>
-                              <TableCell>
-                                <Badge className="bg-amber-500 text-white whitespace-nowrap">
-                                  +{row.lateMinutes}&nbsp;min
-                                </Badge>
+                        </TableHeader>
+                        <TableBody>
+                          {isLoading ? (
+                            Array.from({ length: 5 }).map((_, index) => (
+                              <TableRow key={`late-skeleton-${index}`}>
+                                <TableCell colSpan={6}>
+                                  <div className="h-4 bg-muted animate-pulse rounded" />
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          ) : visibleLateRows.length === 0 ? (
+                            <TableRow>
+                              <TableCell colSpan={6} className="text-center text-muted-foreground">
+                                Aucun retard détecté pour ces critères.
                               </TableCell>
                             </TableRow>
-                          ))
-                        )}
-                      </TableBody>
-                    </Table>
-                  </div>
+                          ) : (
+                            visibleLateRows.map((row) => (
+                              <TableRow key={row.id}>
+                                <TableCell className="max-w-[9rem] truncate font-medium">{row.fullName}</TableCell>
+                                <TableCell className="hidden lg:table-cell">{row.serviceName}</TableCell>
+                                <TableCell className="hidden md:table-cell">
+                                  <Badge variant={row.employeeType === "intern" ? "secondary" : "outline"}>
+                                    {row.employeeType === "intern" ? "Stagiaire" : "Employé"}
+                                  </Badge>
+                                </TableCell>
+                                <TableCell className="hidden xl:table-cell">{formatDateLabel(row.date)}</TableCell>
+                                <TableCell>{row.timeLabel}</TableCell>
+                                <TableCell>
+                                  <Badge className="whitespace-nowrap bg-amber-500 text-white">
+                                    +{row.lateMinutes}&nbsp;min
+                                  </Badge>
+                                </TableCell>
+                              </TableRow>
+                            ))
+                          )}
+                        </TableBody>
+                      </Table>
+                    </div>
+                    {sortedLateRows.length > lateVisible && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="mt-3 w-full"
+                        onClick={() => setLateVisible((count) => count + PAGE_SIZE)}
+                      >
+                        Afficher plus ({sortedLateRows.length - lateVisible} restant
+                        {sortedLateRows.length - lateVisible > 1 ? "s" : ""})
+                      </Button>
+                    )}
+                  </>
                 )}
               </CardContent>
             </Card>
           </div>
 
-          <div className="grid gap-6">
+          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-2">
+            <PresenceStatusList
+              title="Employés permanents"
+              employeeType="permanent"
+              queryKey={['reports-permanent-presence']}
+            />
             <InternsList />
           </div>
       </div>
@@ -672,4 +1045,3 @@ const Reports = () => {
 };
 
 export default Reports;
-

@@ -7,6 +7,7 @@ export interface AttendanceSettings {
   morningEnd: string;
   afternoonStart: string;
   afternoonEnd: string;
+  lateToleranceMinutes: number;
 }
 
 interface AttendanceSettingsContextValue {
@@ -20,6 +21,7 @@ const DEFAULT_SETTINGS: AttendanceSettings = {
   morningEnd: "12:00",
   afternoonStart: "13:30",
   afternoonEnd: "17:30",
+  lateToleranceMinutes: 5,
 };
 
 const AttendanceSettingsContext = createContext<AttendanceSettingsContextValue | undefined>(
@@ -39,6 +41,7 @@ const readFromStorage = (): AttendanceSettings => {
       morningEnd: parsed.morningEnd ?? DEFAULT_SETTINGS.morningEnd,
       afternoonStart: parsed.afternoonStart ?? DEFAULT_SETTINGS.afternoonStart,
       afternoonEnd: parsed.afternoonEnd ?? DEFAULT_SETTINGS.afternoonEnd,
+      lateToleranceMinutes: parsed.lateToleranceMinutes ?? DEFAULT_SETTINGS.lateToleranceMinutes,
     };
   } catch (error) {
     console.error("Unable to read attendance settings:", error);
