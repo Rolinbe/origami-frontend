@@ -292,6 +292,12 @@ All colors MUST be HSL.
 
 /* Mobile : zones sûres (encoche / barre gestuelle iOS & Android) */
 @layer utilities {
+  /* Les enfants de grille ne débordent plus de leur colonne :
+     force le scroll interne des tableaux au lieu d'élargir la carte */
+  .grid > * {
+    min-width: 0;
+  }
+
   .pt-safe {
     padding-top: env(safe-area-inset-top, 0px);
   }

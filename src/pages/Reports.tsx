@@ -540,7 +540,7 @@ const Reports = () => {
           </Card>
 
           <div className="grid gap-6 lg:grid-cols-2">
-            <Card className="flex-1">
+            <Card className="min-w-0">
               <CardHeader>
                 <CardTitle>Absents</CardTitle>
                 <CardDescription>Employés et stagiaires sans pointage</CardDescription>
@@ -551,13 +551,13 @@ const Reports = () => {
                     {errorMessage ?? "Impossible de charger les données de pointage."}
                   </div>
                 ) : (
-                  <div className="rounded-md border overflow-x-auto">
+                  <div className="w-full rounded-md border overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
                           <TableHead>Employé</TableHead>
-                          <TableHead>Service</TableHead>
-                          <TableHead>Type</TableHead>
+                          <TableHead className="hidden md:table-cell">Service</TableHead>
+                          <TableHead className="hidden md:table-cell">Type</TableHead>
                           <TableHead>Date</TableHead>
                         </TableRow>
                       </TableHeader>
@@ -579,9 +579,9 @@ const Reports = () => {
                         ) : (
                           filteredAbsenceRows.map((row) => (
                             <TableRow key={row.id}>
-                              <TableCell className="font-medium">{row.fullName}</TableCell>
-                              <TableCell>{row.serviceName}</TableCell>
-                              <TableCell>
+                              <TableCell className="max-w-[10rem] truncate font-medium">{row.fullName}</TableCell>
+                              <TableCell className="hidden md:table-cell">{row.serviceName}</TableCell>
+                              <TableCell className="hidden md:table-cell">
                                 <Badge variant={row.employeeType === "intern" ? "secondary" : "outline"}>
                                   {row.employeeType === "intern" ? "Stagiaire" : "Employé"}
                                 </Badge>
@@ -597,7 +597,7 @@ const Reports = () => {
               </CardContent>
             </Card>
 
-            <Card className="flex-1">
+            <Card className="min-w-0">
               <CardHeader>
                 <CardTitle>Retards</CardTitle>
                 <CardDescription>Entrées après la tolérance définie</CardDescription>
@@ -608,14 +608,14 @@ const Reports = () => {
                     {errorMessage ?? "Impossible de charger les données de pointage."}
                   </div>
                 ) : (
-                  <div className="rounded-md border overflow-x-auto">
+                  <div className="w-full rounded-md border overflow-x-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
                           <TableHead>Employé</TableHead>
-                          <TableHead>Service</TableHead>
-                          <TableHead>Type</TableHead>
-                          <TableHead>Date</TableHead>
+                          <TableHead className="hidden lg:table-cell">Service</TableHead>
+                          <TableHead className="hidden md:table-cell">Type</TableHead>
+                          <TableHead className="hidden xl:table-cell">Date</TableHead>
                           <TableHead>Heure</TableHead>
                           <TableHead>Retard</TableHead>
                         </TableRow>
@@ -638,17 +638,17 @@ const Reports = () => {
                         ) : (
                           filteredLateRows.map((row) => (
                             <TableRow key={row.id}>
-                              <TableCell className="font-medium">{row.fullName}</TableCell>
-                              <TableCell>{row.serviceName}</TableCell>
-                              <TableCell>
+                              <TableCell className="max-w-[9rem] truncate font-medium">{row.fullName}</TableCell>
+                              <TableCell className="hidden lg:table-cell">{row.serviceName}</TableCell>
+                              <TableCell className="hidden md:table-cell">
                                 <Badge variant={row.employeeType === "intern" ? "secondary" : "outline"}>
                                   {row.employeeType === "intern" ? "Stagiaire" : "Employé"}
                                 </Badge>
                               </TableCell>
-                              <TableCell>{formatDateLabel(row.date)}</TableCell>
+                              <TableCell className="hidden xl:table-cell">{formatDateLabel(row.date)}</TableCell>
                               <TableCell>{row.timeLabel}</TableCell>
                               <TableCell>
-                                <Badge className="bg-amber-500 text-white">
+                                <Badge className="bg-amber-500 text-white whitespace-nowrap">
                                   +{row.lateMinutes}&nbsp;min
                                 </Badge>
                               </TableCell>

@@ -119,25 +119,25 @@ const Dashboard = () => {
           <LiveActivityFeed />
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3 stagger">
-          <div className="lg:col-span-2">
+        <div className="grid gap-6 lg:grid-cols-3 stagger [&>*]:min-w-0">
+          <div className="lg:col-span-2 min-w-0">
             <AttendanceList />
           </div>
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 min-w-0">
             <ServicePresence />
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3 stagger">
-          <div className="lg:col-span-2">
+        <div className="grid gap-6 lg:grid-cols-3 stagger [&>*]:min-w-0">
+          <div className="lg:col-span-2 min-w-0">
             <AttendanceCharts />
           </div>
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 min-w-0">
             <InternsList />
           </div>
         </div>
 
-        <div className="grid gap-6 lg:grid-cols-3 stagger">
+        <div className="grid gap-6 lg:grid-cols-3 stagger [&>*]:min-w-0">
           <PresentEmployees />
           <LateEmployees />
           <AbsentList />
