@@ -70,7 +70,7 @@ export const SidebarContent = () => {
       </nav>
 
       {/* Footer - Fixed at bottom */}
-      <div className="relative shrink-0 space-y-3 border-t border-white/10 p-3 pb-safe">
+      <div className="relative shrink-0 space-y-3 border-t border-white/10 p-3 pb-safe mb-3">
         <div className="flex items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 px-3 py-2.5 backdrop-blur-sm">
           <span className="relative flex h-2 w-2">
             <span className="absolute inline-flex h-full w-full animate-ping-slow rounded-full bg-emerald-400" />
