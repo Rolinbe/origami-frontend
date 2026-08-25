@@ -95,6 +95,24 @@ const playBeep = (success: boolean) => {
   }
 };
 
+// Débloque l'audio lors d'une interaction utilisateur (politique autoplay des navigateurs)
+const unlockAudio = () => {
+  try {
+    const ctx = getAudioCtx();
+    if (!ctx) return;
+    if (ctx.state === "suspended") void ctx.resume();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + 0.01);
+  } catch {
+    // ignore
+  }
+};
+
 const Scan = () => {
   const [scanType, setScanType] = useState<"check_in" | "check_out">("check_in");
   const [manualCode, setManualCode] = useState("");
@@ -208,13 +226,26 @@ const Scan = () => {
   }, [handleScanPayload]);
 
   const startCamera = useCallback(async () => {
+    unlockAudio();
     setCameraError(null);
     setResult(null);
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setCameraError(
+        "La caméra n'est pas disponible dans ce navigateur (contexte non sécurisé). Utilisez HTTPS.",
+      );
+      return;
+    }
+    let stream: MediaStream | null = null;
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: "environment" } },
-        audio: false,
-      });
+      try {
+        stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: { ideal: "environment" } },
+          audio: false,
+        });
+      } catch {
+        // Repli : caméra par défaut si la caméra arrière n'existe pas (desktop)
+        stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+      }
       streamRef.current = stream;
       const video = videoRef.current;
       if (!video) {
@@ -227,12 +258,20 @@ const Scan = () => {
       scanLoopRef.current = true;
       rafRef.current = requestAnimationFrame(scanFrame);
     } catch (error) {
-      stopStream(streamRef.current);
+      if (streamRef.current) stopStream(streamRef.current);
+      if (stream && stream !== streamRef.current) stopStream(stream);
       streamRef.current = null;
       setScanning(false);
-      setCameraError(
-        "Impossible d'accéder à la caméra. Vérifiez les permissions ou utilisez la saisie manuelle.",
-      );
+      const name = (error as { name?: string }).name ?? "";
+      const detail =
+        name === "NotAllowedError"
+          ? "Accès refusé : autorisez la caméra pour ce site (icône cadenas dans la barre d'adresse)."
+          : name === "NotFoundError" || name === "OverconstrainedError"
+            ? "Aucune caméra détectée sur cet appareil."
+            : name === "NotReadableError"
+              ? "La caméra est déjà utilisée par une autre application."
+              : `Impossible d'accéder à la caméra${name ? ` (${name})` : ""}.`;
+      setCameraError(detail);
     }
   }, [scanFrame]);
 
