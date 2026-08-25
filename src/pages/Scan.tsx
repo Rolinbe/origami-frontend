@@ -19,11 +19,15 @@ type ScanResult = {
   message: string;
   isLate?: boolean;
   duplicate?: boolean;
+  badgeId?: string;
   user?: {
+    id?: string;
     firstName: string;
     lastName: string;
     service?: string | null;
+    serviceColor?: string | null;
     employeeType?: string;
+    profileImage?: string | null;
   };
   attendance?: {
     date: string;
@@ -128,6 +132,33 @@ const Scan = () => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
   const decodingRef = useRef(false);
+  const resultTimerRef = useRef<number | null>(null);
+  const processingTimerRef = useRef<number | null>(null);
+
+  // Durée d'affichage du résultat avant effacement automatique
+  const RESULT_DISPLAY_MS = 15000;
+
+  const clearResultTimers = useCallback(() => {
+    if (resultTimerRef.current !== null) {
+      window.clearTimeout(resultTimerRef.current);
+      resultTimerRef.current = null;
+    }
+    if (processingTimerRef.current !== null) {
+      window.clearTimeout(processingTimerRef.current);
+      processingTimerRef.current = null;
+    }
+  }, []);
+
+  const scheduleResultClear = useCallback(() => {
+    if (resultTimerRef.current !== null) {
+      window.clearTimeout(resultTimerRef.current);
+    }
+    resultTimerRef.current = window.setTimeout(() => {
+      setResult(null);
+      setLastResult(null);
+      resultTimerRef.current = null;
+    }, RESULT_DISPLAY_MS);
+  }, []);
 
   const handleScanPayload = useCallback(
     async (qrCodeData: string) => {
@@ -136,6 +167,7 @@ const Scan = () => {
       if (!badgeId) {
         setResult({ success: false, message: "QR code invalide" });
         playBeep(false);
+        scheduleResultClear();
         return;
       }
 
@@ -160,6 +192,7 @@ const Scan = () => {
           message: data.message,
           isLate: data.isLate,
           duplicate: data.duplicate,
+          badgeId,
           user: data.user,
           attendance: data.attendance,
         });
@@ -172,14 +205,14 @@ const Scan = () => {
         setResult({ success: false, message });
         playBeep(false);
       } finally {
-        setTimeout(() => setIsProcessing(false), 1500);
-        setTimeout(() => {
-          setResult(null);
-          setLastResult(null);
-        }, 6000);
+        processingTimerRef.current = window.setTimeout(() => {
+          setIsProcessing(false);
+          processingTimerRef.current = null;
+        }, 1500);
+        scheduleResultClear();
       }
     },
-    [isProcessing, lastResult, scanType],
+    [isProcessing, lastResult, scanType, scheduleResultClear],
   );
 
   const scanFrame = useCallback(() => {
@@ -293,8 +326,9 @@ const Scan = () => {
   useLayoutEffect(() => {
     return () => {
       stopCamera();
+      clearResultTimers();
     };
-  }, [stopCamera]);
+  }, [stopCamera, clearResultTimers]);
 
   const handleManualSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -434,22 +468,72 @@ const Scan = () => {
                 <p className="text-sm">En attente d'un scan…</p>
               </div>
             ) : result.success ? (
-              <div className="rounded-lg border border-success/30 bg-success/10 p-4">
+              <div className="space-y-4 rounded-lg border border-success/30 bg-success/10 p-4">
                 <div className="flex items-center gap-2 text-success">
                   <CheckCircle2 className="h-5 w-5" />
                   <p className="font-medium">{result.message}</p>
                 </div>
+
                 {result.user && (
-                  <div className="mt-3 text-sm">
-                    <p className="font-semibold text-foreground">
-                      {result.user.firstName} {result.user.lastName}
-                    </p>
-                    <p className="text-muted-foreground">
-                      {result.user.service ?? "Non assigné"}
-                      {result.user.employeeType === "intern" ? " · Stagiaire" : ""}
-                    </p>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch">
+                    {/* Carte photo d'identité (format 4×4) */}
+                    <div className="flex shrink-0 flex-col items-center gap-2 rounded-xl border bg-card p-3">
+                      <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                        Photo d'identité
+                      </span>
+                      {result.user.profileImage ? (
+                        <img
+                          src={result.user.profileImage}
+                          alt={`Photo de ${result.user.firstName} ${result.user.lastName}`}
+                          className="aspect-square w-28 rounded-md border-2 border-primary/30 object-cover"
+                        />
+                      ) : (
+                        <div className="flex aspect-square w-28 items-center justify-center rounded-md border-2 border-primary/30 bg-primary/10 text-2xl font-bold text-primary">
+                          {`${result.user.firstName?.[0] ?? "?"}${result.user.lastName?.[0] ?? ""}`}
+                        </div>
+                      )}
+                      <span className="text-center text-xs font-medium leading-tight">
+                        {result.user.firstName}
+                        <br />
+                        {result.user.lastName}
+                      </span>
+                    </div>
+
+                    {/* Carte infos vérification */}
+                    <div className="min-w-0 flex-1 rounded-xl border bg-card p-4">
+                      <p className="mb-3 text-xs font-medium uppercase tracking-wider text-muted-foreground">
+                        Vérification d'identité
+                      </p>
+                      <p className="truncate text-lg font-semibold">
+                        {result.user.firstName} {result.user.lastName}
+                      </p>
+                      <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                        <span className="inline-flex items-center gap-1.5">
+                          <span
+                            className="h-2.5 w-2.5 rounded-full"
+                            style={{ backgroundColor: result.user.serviceColor ?? "#94a3b8" }}
+                          />
+                          {result.user.service ?? "Non assigné"}
+                        </span>
+                        {result.user.employeeType === "intern" && (
+                          <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700">
+                            Stagiaire
+                          </span>
+                        )}
+                      </div>
+                      {result.badgeId && (
+                        <p className="mt-2 truncate font-mono text-xs text-muted-foreground">
+                          Badge : {result.badgeId}
+                        </p>
+                      )}
+                      <p className="mt-3 border-t pt-2 text-xs text-muted-foreground">
+                        Vérifiez que la photo correspond bien à la personne avant de valider le
+                        pointage.
+                      </p>
+                    </div>
                   </div>
                 )}
+
                 {result.attendance && (
                   <div className="mt-2 text-xs text-muted-foreground space-y-0.5">
                     <p>Date : {result.attendance.date}</p>
