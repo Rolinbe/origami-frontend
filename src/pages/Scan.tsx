@@ -1,6 +1,6 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import jsQR from "jsqr";
-import { ScanBarcode, Camera, Keyboard, CheckCircle2, XCircle } from "lucide-react";
+import { ScanBarcode, Camera, Keyboard, CheckCircle2, XCircle, AlertTriangle } from "lucide-react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,7 @@ type ScanResult = {
   message: string;
   isLate?: boolean;
   duplicate?: boolean;
+  anomalies?: string[];
   badgeId?: string;
   user?: {
     id?: string;
@@ -176,7 +177,7 @@ const Scan = () => {
       setIsProcessing(true);
       setResult(null);
       try {
-        const response = await apiService.post<{ success?: boolean; message: string; isLate?: boolean; duplicate?: boolean; user?: ScanResult["user"]; attendance?: ScanResult["attendance"] }>(
+        const response = await apiService.post<{ success?: boolean; message: string; isLate?: boolean; duplicate?: boolean; anomalies?: string[]; user?: ScanResult["user"]; attendance?: ScanResult["attendance"] }>(
           "/scan/badge",
           {
             qrCodeData,
@@ -192,6 +193,7 @@ const Scan = () => {
           message: data.message,
           isLate: data.isLate,
           duplicate: data.duplicate,
+          anomalies: data.anomalies,
           badgeId,
           user: data.user,
           attendance: data.attendance,
@@ -549,6 +551,20 @@ const Scan = () => {
                     {result.isLate && (
                       <p className="text-warning font-medium">⚠ Retard</p>
                     )}
+                  </div>
+                )}
+
+                {result.anomalies && result.anomalies.length > 0 && (
+                  <div className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 dark:border-amber-700 dark:bg-amber-950/40">
+                    <div className="mb-1.5 flex items-center gap-1.5 text-amber-700 dark:text-amber-300">
+                      <AlertTriangle className="h-4 w-4" />
+                      <span className="text-xs font-semibold uppercase tracking-wide">Anomalie détectée</span>
+                    </div>
+                    <ul className="space-y-0.5 text-xs text-amber-800 dark:text-amber-200">
+                      {result.anomalies.map((a, i) => (
+                        <li key={i}>• {a}</li>
+                      ))}
+                    </ul>
                   </div>
                 )}
               </div>

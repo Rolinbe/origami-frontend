@@ -7,6 +7,8 @@ import {
   BookMarked,
   Settings,
   ScanBarcode,
+  CalendarOff,
+  Shield,
 } from "lucide-react";
 import { NavItem } from "./types";
 
@@ -22,6 +24,7 @@ export const navigationItems: NavItem[] = [
     submenu: [
       { title: "Départements", icon: Building, path: "/services" },
       { title: "Employés", icon: Users, path: "/employees" },
+      { title: "Congés", icon: CalendarOff, path: "/leaves" },
     ]
   },
   {
@@ -43,5 +46,10 @@ export const navigationItems: NavItem[] = [
     title: "Paramètres",
     icon: Settings,
     path: "/settings"
+  },
+  {
+    title: "Journal d'audit",
+    icon: Shield,
+    path: "/audit-log"
   }
 ];

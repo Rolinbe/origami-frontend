@@ -13,6 +13,8 @@ import BadgeManagement from "./pages/BadgeManagement";
 import SettingsPage from "./pages/Settings";
 import Reports from "./pages/Reports";
 import Scan from "./pages/Scan";
+import Leaves from "./pages/Leaves";
+import AuditLogPage from "./pages/AuditLog";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { CursorGlow } from "./components/CursorGlow";
 import { AttendanceSettingsProvider } from "./contexts/AttendanceSettingsContext";
@@ -102,6 +104,22 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <SettingsPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/leaves"
+        element={
+          <ProtectedRoute>
+            <Leaves />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/audit-log"
+        element={
+          <ProtectedRoute>
+            <AuditLogPage />
           </ProtectedRoute>
         }
       />
