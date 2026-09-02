@@ -9,7 +9,6 @@ import {
   ScanBarcode,
   CalendarOff,
   Shield,
-  UserRound,
 } from "lucide-react";
 import { NavItem } from "./types";
 
@@ -52,10 +51,5 @@ export const navigationItems: NavItem[] = [
     title: "Journal d'audit",
     icon: Shield,
     path: "/audit-log"
-  },
-  {
-    title: "Mon profil",
-    icon: UserRound,
-    path: "/profile"
   }
 ];

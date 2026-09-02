@@ -11,6 +11,7 @@ import { toast } from "sonner";
 import settingsService, { AttendanceSettings } from "@/services/settings.service";
 import holidayService, { Holiday } from "@/services/holiday.service";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { ProfileSettings } from "@/components/settings/ProfileSettings";
 
 const DEFAULT_BACKEND_SETTINGS: AttendanceSettings = {
   workStartTime: "08:00",
@@ -157,8 +158,10 @@ const SettingsPage = () => {
         <PageHeader
           icon={Settings}
           title="Paramètres"
-          description="Configurez les horaires de travail, les seuils de retard et les jours fériés."
+          description="Gérez votre profil, les horaires de travail, les seuils de retard et les jours fériés."
         />
+
+        <ProfileSettings />
 
         <Card>
           <CardHeader>
