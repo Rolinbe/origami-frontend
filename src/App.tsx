@@ -15,6 +15,7 @@ import Reports from "./pages/Reports";
 import Scan from "./pages/Scan";
 import Leaves from "./pages/Leaves";
 import AuditLogPage from "./pages/AuditLog";
+import Profile from "./pages/Profile";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { CursorGlow } from "./components/CursorGlow";
 import { AttendanceSettingsProvider } from "./contexts/AttendanceSettingsContext";
@@ -120,6 +121,14 @@ const AppRoutes = () => {
         element={
           <ProtectedRoute>
             <AuditLogPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute>
+            <Profile />
           </ProtectedRoute>
         }
       />
